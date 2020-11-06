@@ -1,0 +1,15 @@
+.rbc-month-view {
+    height: 40em;
+}
+div.rbc-calendar > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button{
+  background-color: blue;
+  color: white;
+}
+.rbc-toolbar-label{
+  display: block;
+
+}
+div.rbc-calendar > div.rbc-toolbar:first-child > span.rbc-btn-group:last-child > button{
+  background-color: blue;
+  color: white;
+}
