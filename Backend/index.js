@@ -4,7 +4,7 @@ const app = express();
 var UserSchema = require("./schema/users");
 const jwt = require("jsonwebtoken");
 var cors = require('cors');
-const port = 8080;
+const port = process.env.PORT || 8080;
 const mongoose = require("mongoose");
 var EventSchema = require("./schema/event");
 app.use(cors());
