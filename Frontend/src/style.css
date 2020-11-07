@@ -1,15 +1,59 @@
 .rbc-month-view {
-    height: 40em;
+  height: 40em;
 }
-div.rbc-calendar > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button{
+div.rbc-calendar
+  > div.rbc-toolbar:first-child
+  > span.rbc-btn-group:first-child
+  > button {
   background-color: blue;
   color: white;
 }
-.rbc-toolbar-label{
+.rbc-toolbar-label {
   display: block;
-
 }
-div.rbc-calendar > div.rbc-toolbar:first-child > span.rbc-btn-group:last-child > button{
+div.rbc-calendar
+  > div.rbc-toolbar:first-child
+  > span.rbc-btn-group:last-child
+  > button {
   background-color: blue;
   color: white;
+}
+
+.rbc-calendar
+  .rbc-month-view
+  .rbc-month-row
+  .rbc-row-content
+  .rbc-row
+  .rbc-date-cell.rbc-now.rbc-current
+  a {
+  background-color: #7367f0;
+  border-radius: 50%;
+  padding: 0.4rem;
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  max-width: 32px;
+}
+
+.rbc-date-cell > a,
+.rbc-date-cell > a:active,
+.rbc-date-cell > a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rbc-calendar
+  .rbc-month-view
+  .rbc-month-row
+  .rbc-row-content
+  .rbc-row
+  .rbc-date-cell {
+  text-align: left;
+  padding: 0.8rem;
+  min-width: auto;
+}
+
+
+.rbc-toolbar-label {
+  font-weight: bolder;
 }

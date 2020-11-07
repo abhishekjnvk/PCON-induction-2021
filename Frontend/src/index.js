@@ -1,13 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Selectable from './App/App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
   <React.StrictMode>
-    <Selectable />
+    <App />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 reportWebVitals();
