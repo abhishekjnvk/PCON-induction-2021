@@ -14,22 +14,23 @@ const token = cookies.get("webtoken");
 class Calander extends React.Component {
   constructor(...args) {
     super(...args);
-    this.state = { events: [], fetched: false };
+    this.state = { events: [], fetched: false,isMember:false,isAdmin:false };
   }
 
   handleSelect = async ({ start, end }) => {
-    if (token) {
+    var team_id = this.props.match.params.id;
+    if (this.state.isAdmin) {
       swal("Enter Event Name:", {
         content: "input",
       }).then((title) => {
         if (title) {
-          message.loading({ content: "Adding Event", key:"event_adding" });
+          message.loading({ content: "Adding Event", key: "event_adding" });
           var this_event = {
             start,
             end,
             title,
           };
-
+          // console.log(this_event);
           var requestOptions = {
             method: "POST",
             redirect: "follow",
@@ -37,13 +38,17 @@ class Calander extends React.Component {
           fetch(
             `http://localhost:8080/add_event?event=${JSON.stringify(
               this_event
-            )}&token=${token}`,
+            )}&token=${token}&team_id=${team_id}`,
             requestOptions
           )
             .then((response) => response.json())
             .then((result) => {
               if (result.status === 0) {
-                message.error({ content: result.message, key:"event_adding", duration: 2 });
+                message.error({
+                  content: result.message,
+                  key: "event_adding",
+                  duration: 2,
+                });
               }
               if (result.status === 1) {
                 this.setState({
@@ -56,7 +61,11 @@ class Calander extends React.Component {
                     },
                   ],
                 });
-                message.success({ content: "Event Added", key:"event_adding", duration: 2 });
+                message.success({
+                  content: "Event Added",
+                  key: "event_adding",
+                  duration: 2,
+                });
               }
             })
             .catch((error) => console.log("error", error));
@@ -68,25 +77,33 @@ class Calander extends React.Component {
   };
 
   getEvent = async () => {
+    message.loading({ content: "Fetching Event list", key: "loadingEvent" });
+    var team_id = this.props.match.params.id;
     var requestOptions = {
       method: "GET",
       redirect: "follow",
     };
-    fetch("http://localhost:8080/", requestOptions)
+    fetch(`http://localhost:8080/?team_id=${team_id}&token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         var fucking_event = [];
-        result.forEach((aaa) => {
+        (result.data).forEach((aaa) => {
           aaa.start = new Date(aaa.start);
           aaa.end = new Date(aaa.end);
           fucking_event.push({
             ...aaa,
           });
         });
-        console.log(fucking_event);
         this.setState({
           events: fucking_event,
           fetched: true,
+          isAdmin:result.isAdmin,
+          isMember:result.isMember
+        });
+        message.success({
+          content: "Event Fetched",
+          key: "loadingEvent",
+          duration: 1,
         });
       })
       .catch((error) => console.log("error", error));

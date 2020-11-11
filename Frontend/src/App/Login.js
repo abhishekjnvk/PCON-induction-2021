@@ -7,9 +7,10 @@ import "antd/dist/antd.css";
 export default class AdminLogin extends Component {
   constructor() {
     super();
-    this.state = { email: "", password: "" };
+    this.state = { email: "", password: "", loading: false };
     this.check();
   }
+
   check = () => {
     const cookies = new Cookies();
     if (cookies.get("webtoken")) {
@@ -27,8 +28,12 @@ export default class AdminLogin extends Component {
     console.log("password: " + password);
 
     if (email && password) {
-        message.loading({ content: "Please Wait while system is authenticating you ", key:"loggedin" });
-//
+      message.loading({
+        content: "Please Wait while system is authenticating you ",
+        key: "loggedin",
+      });
+      this.setState({ loading: true });
+      //
       var requestOptions = {
         method: "GET",
         redirect: "follow",
@@ -39,15 +44,25 @@ export default class AdminLogin extends Component {
       )
         .then((response) => response.json())
         .then((result) => {
+          this.setState({ loading: false });
+
           if (result.status === 1) {
-            message.success({ content: 'Login Successfull', key:"loggedin", duration: 2 });
+            message.success({
+              content: "Login Successfull",
+              key: "loggedin",
+              duration: 2,
+            });
 
             let token = result.token;
             cookies.set("webtoken", token, { path: "/" });
             window.location = "/";
             console.log(result);
           } else {
-            message.error({ content: result.message, key:"loggedin", duration: 2 });
+            message.error({
+              content: result.message,
+              key: "loggedin",
+              duration: 2,
+            });
           }
         })
         .catch((error) => console.log("error", error));
@@ -57,8 +72,11 @@ export default class AdminLogin extends Component {
   };
   render() {
     return (
-      <div className="mt-5">
-        <div className="col-lg-3 col-md-4 col-sm-10 mx-auto border border-primary p-5 rounded mt-5">
+      <div className="mt-5 px-3">
+        <div
+          className="col-lg-3 col-md-4 col-sm-10 mx-auto border border-primary p-4 px-2 rounded"
+          style={{ marginTop: "15vh" }}
+        >
           <div className="form-group">
             <label for="exampleInputEmail1">Email address</label>
             <input
@@ -82,13 +100,16 @@ export default class AdminLogin extends Component {
               }}
             />
           </div>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            onClick={this.login}
-          >
-            Login
-          </button>
+          <div style={{ textAlign: "right" }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              onClick={this.login}
+              loading={this.state.loading}
+            >
+              Login
+            </button>
+          </div>
         </div>
       </div>
     );
