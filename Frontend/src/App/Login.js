@@ -56,7 +56,7 @@ export default class AdminLogin extends Component {
               });
 
               let token = result.token;
-              cookies.set("webtoken", token, { path: "/" });
+              cookies.set("webtoken", token, { path: "/", expires: new Date(Date.now()+2592000000)});
               window.location = "/";
               console.log(result);
             } else {

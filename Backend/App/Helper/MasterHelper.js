@@ -89,12 +89,13 @@ module.exports = {
     return flag;
   },
   isUserTeamAdmin: async (team_id, email) => {
-    var flag = false;
+    let flag = false;
+    let uid=md5(email)
     await firebase
       .database()
-      .ref("/team/" + team_id + "/info/")
+      .ref("/team/" + team_id + "/members/"+uid)
       .once("value", function (snap) {
-        if (snap.val().creator == email) {
+        if (snap.val().right === "admin") {
           flag = true;
         }
       });

@@ -1,6 +1,9 @@
 .rbc-month-view {
   height: 40em;
 }
+.rbc-calendar {
+  min-height: 580px;
+}
 div.rbc-calendar
   > div.rbc-toolbar:first-child
   > span.rbc-btn-group:first-child
@@ -68,11 +71,6 @@ div.rbc-calendar
   border-color: #dc3545;
 }
 
-.swal-modal {
-  width: 400px;
-  opacity: 0;
-}
-
 .ant-message {
   bottom: 20px;
   top: initial;
@@ -80,7 +78,7 @@ div.rbc-calendar
 .ant-message { top: 90px; }
 
 .rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-toolbar-label:nth-child(2){
-  width: 200px;
+  width: 250px;
 }
 
 
@@ -92,4 +90,7 @@ div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-ch
 
 .ant-layout-header {
   padding: 0 0px !important;
+}
+.swal2-popup .swal2-content {
+  text-align: left !important;
 }

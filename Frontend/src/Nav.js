@@ -3,7 +3,6 @@ import Cookies from "universal-cookie";
 import swal from "sweetalert";
 
 // eslint-disable-next-line
-
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 
@@ -18,7 +17,7 @@ console.log(email);
 const { Header } = Layout;
 var logout = () => {
   swal({
-    title: "DO You really want to logout",
+    title: "Do You really want to logout",
     icon: "warning",
     buttons: true,
     dangerMode: true,
@@ -55,8 +54,7 @@ const NavigationBar = (props) => {
         </Menu.Item>
         <Menu.Item key="3">
           <Link to="/Create-team">
-            <i className="fad fa-users-medical"></i>
-            Create Team
+            <i className="fad fa-users-medical"></i> Create Team
             </Link>
         </Menu.Item>
         <Menu.Item key="4" className="float-right">

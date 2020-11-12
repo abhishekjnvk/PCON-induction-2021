@@ -39,6 +39,7 @@ module.exports.FetchEvent = async (req, res) => {
                 start: obj[key].start,
                 end: obj[key].end,
                 title: obj[key].title,
+                extra: obj[key].extra,
               };
               data.push(team_obj);
             });
