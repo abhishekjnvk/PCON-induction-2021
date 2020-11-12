@@ -105,6 +105,37 @@ module.exports.AddEvent = async (req, res) => {
   }
 };
 
+module.exports.DeleteEvent = async (req, res) => {
+  try {
+    var token = req.query.token;
+    var team_id = req.query.team_id;
+    var event_id = req.query.event_id;
+
+    if (event_id && team_id && token) {
+      var email = await geEmailFromToken(token);
+
+      if (await isUserTeamAdmin(team_id, email)) {
+        await database.ref("/team/" + team_id + "/event/" + event_id).remove();
+        res.json({ response: "Success", status: 1 });
+      } else {
+        res.json({
+          response: "You have no right to edit this calender",
+          status: 0,
+        });
+      }
+    } else {
+      res.json({ response: "Missing Required", status: 0 });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: "Internal Server Error : " + err.message,
+      status: 0,
+    });
+  }
+};
+
+
+
 module.exports.Search = async (req, res) => {
   try {
     getUserId(req.query.email);

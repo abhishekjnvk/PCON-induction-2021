@@ -1,74 +1,84 @@
 import React from "react";
 import Cookies from "universal-cookie";
+import swal from "sweetalert";
 
 // eslint-disable-next-line
 
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import jwt_decode from "jwt-decode";
 
 import { Layout, Menu, message } from "antd";
-const { Header } = Layout;
 const cookies = new Cookies();
+var token = cookies.get("webtoken");
+if (token) {
+  var decoded = jwt_decode(token);
+  var email = decoded.data.email;
+}
+console.log(email);
+const { Header } = Layout;
 var logout = () => {
-  cookies.remove("webtoken");
-  message.success("Logged Out");
-  setTimeout(() => {
-    window.location = "/";
-  }, 1000);
+  swal({
+    title: "DO You really want to logout",
+    icon: "warning",
+    buttons: true,
+    dangerMode: true,
+  }).then((willDelete) => {
+    if (willDelete) {
+      cookies.remove("webtoken");
+      message.success("Logged Out");
+      setTimeout(() => {
+        window.location = "/";
+      }, 1000);
+    }
+  });
 };
 
 const NavigationBar = (props) => {
-  // const [isOpen, setIsOpen] = useState(false);
-  // const toggle = () => setIsOpen(!isOpen);
-  var token = cookies.get("webtoken");
   if (!token) {
-    var const_div = <Link to="/login">Login</Link>;
+    var nav_comp = (
+      <Menu.Item key="4" className="float-right mr-3">
+        <Link to="/login">
+          <i className="fad fa-unlock-alt"></i> Login
+        </Link>
+      </Menu.Item>
+    );
   } else {
-    const_div = (
-      <Link to="/logout" onClick={logout}>
-        Logout
-      </Link>
+    nav_comp = (
+      <>
+        <Menu.Item key="1">
+          <Link to="/">
+            <i className="fad fa-home-lg-alt"></i> Home
+            </Link>
+        </Menu.Item>
+        <Menu.Item key="2">
+          <Link to="/team"><i className="fad fa-users" ></i> Team</Link>
+        </Menu.Item>
+        <Menu.Item key="3">
+          <Link to="/Create-team">
+            <i className="fad fa-users-medical"></i>
+            Create Team
+            </Link>
+        </Menu.Item>
+        <Menu.Item key="4" className="float-right">
+          <Link to="#" onClick={logout}>
+            <i className="fad fa-power-off"></i> (
+            <small className="text-light">{email}</small>)
+          </Link>
+        </Menu.Item>
+      </>
     );
   }
+
   console.log(token);
   return (
-    // <div>
-    //   <Navbar color="primary" dark expand="md">
-    //     <Link to="/" className="navbar-brand">
-    //       Event Calander
-    //     </Link>
-
-    //     <NavbarToggler onClick={toggle} />
-    //     <Collapse isOpen={isOpen} navbar>
-    //       <Nav className="mr-auto" navbar>
-    //         <NavItem>
-    //           <Link to="/" className="nav-link text-light">
-    //             Home
-    //           </Link>
-    //         </NavItem>
-    //       </Nav>
-    //       <Nav className="ml-auto " navbar>
-    //         <NavItem className="nav-link text-light">{const_div}</NavItem>
-    //       </Nav>
-    //     </Collapse>
-    //   </Navbar>
-    // </div>
-      <Layout className="layout">
-        <Header>
-          <div className="logo" />
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
-            <Menu.Item key="1">
-              <Link to="/">Home</Link>
-            </Menu.Item>
-            <Menu.Item key="2">
-              <Link to="/team">Team</Link>
-            </Menu.Item>
-            <Menu.Item key="3">
-              <Link to="/Create-team">Create Team</Link>
-            </Menu.Item>
-            <Menu.Item key="4">{const_div}</Menu.Item>
-          </Menu>
-        </Header>
-      </Layout>
+    <Layout className="layout">
+      <Header>
+        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
+          {nav_comp}
+          {/* <Menu.Item key="4">{nav_comp}</Menu.Item> */}
+        </Menu>
+      </Header>
+    </Layout>
   );
 };
 

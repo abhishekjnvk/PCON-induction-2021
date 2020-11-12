@@ -24,48 +24,54 @@ export default class AdminLogin extends Component {
     const cookies = new Cookies();
     let email = this.state.email;
     let password = this.state.password;
-    console.log("email: " + email);
-    console.log("password: " + password);
-
     if (email && password) {
-      message.loading({
-        content: "Please Wait while system is authenticating you ",
-        key: "loggedin",
-      });
-      this.setState({ loading: true });
-      //
-      var requestOptions = {
-        method: "GET",
-        redirect: "follow",
-      };
-      fetch(
-        `http://localhost:8080/login?email=${email}&password=${password}`,
-        requestOptions
-      )
-        .then((response) => response.json())
-        .then((result) => {
-          this.setState({ loading: false });
+      if (
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+          email
+        )
+      ) {
+        message.loading({
+          content: "Please Wait while system is authenticating you ",
+          key: "loggedin",
+        });
+        this.setState({ loading: true });
+        //
+        var requestOptions = {
+          method: "GET",
+          redirect: "follow",
+        };
+        fetch(
+          `https://caleder-app-backend.herokuapp.com/login?email=${email}&password=${password}`,
+          requestOptions
+        )
+          .then((response) => response.json())
+          .then((result) => {
+            this.setState({ loading: false });
 
-          if (result.status === 1) {
-            message.success({
-              content: "Login Successfull",
-              key: "loggedin",
-              duration: 2,
-            });
+            if (result.status === 1) {
+              message.success({
+                content: "Login Successfull",
+                key: "loggedin",
+                duration: 2,
+              });
 
-            let token = result.token;
-            cookies.set("webtoken", token, { path: "/" });
-            window.location = "/";
-            console.log(result);
-          } else {
-            message.error({
-              content: result.message,
-              key: "loggedin",
-              duration: 2,
-            });
-          }
-        })
-        .catch((error) => console.log("error", error));
+              let token = result.token;
+              cookies.set("webtoken", token, { path: "/" });
+              window.location = "/";
+              console.log(result);
+            } else {
+              message.error({
+                content: result.message,
+                key: "loggedin",
+                duration: 2,
+              });
+            }
+          })
+
+          .catch((error) => console.log("error", error));
+      } else {
+        message.warning("Please Enter a Valid Email");
+      }
     } else {
       message.warning("All Fields are required");
     }

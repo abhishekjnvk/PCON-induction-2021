@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import "semantic-ui-css/semantic.min.css";
-import { Button, Icon, Label, Dropdown } from "semantic-ui-react";
+import { Button, Icon, Dropdown } from "semantic-ui-react";
 import { Redirect } from "react-router-dom";
 import { message } from "antd";
 import Cookies from "universal-cookie";
+import "../style.css";
+
 const cookies = new Cookies();
 
 class Home extends Component {
@@ -23,7 +25,7 @@ class Home extends Component {
       redirect: "follow",
     };
     var token = cookies.get("webtoken");
-    fetch(`http://localhost:8080/myteam?token=${token}`, requestOptions)
+    fetch(`https://caleder-app-backend.herokuapp.com/myteam?token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -33,7 +35,7 @@ class Home extends Component {
           message.warning({
             content: "You are not in any team please create a team",
             key: "loadingTeam",
-            duration: 1,
+            duration: 2,
           });
         } else {
           result.data.map((data) => {
@@ -45,11 +47,8 @@ class Home extends Component {
             return true;
           });
           this.setState({ data: course_taught });
-          message.success({
-            content: "Fetched",
-            key: "loadingTeam",
-            duration: 1,
-          });
+          message.destroy()
+          
         }
       })
       .catch((error) => console.log("error", error));
@@ -80,8 +79,9 @@ class Home extends Component {
       return <></>;
     } else {
       return (
-        <div className="col-lg-2 mx-auto mt-2 text-center">
+        <div className="col-lg-3 mx-auto mt-2 text-center">
           {this.renderRedirect()}
+          <center style={{marginTop:"100px",padding:'25px'}}>Please Select a Team to View Calander</center>
           <Dropdown
             placeholder="Select Team"
             fluid
@@ -91,10 +91,11 @@ class Home extends Component {
             onChange={(e, data) => {
               this.setState({ selected_team: data.value });
             }}
+            style={{fontSize:"1.2em"}}
           />
-          <Button color="red" className="mt-2" onClick={this.setRedirect}>
-            <Icon name="refresh" />
-            Fetch Events
+          <Button color="primary" className="mt-2" onClick={this.setRedirect}>
+            <Icon name="calendar alternate outline" />
+            View Calender
           </Button>
         </div>
       );

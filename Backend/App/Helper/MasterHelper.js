@@ -46,8 +46,8 @@ module.exports = {
   },
 
   geEmailFromToken: async function (token) {
-    var data=await jwt.verify(token, process.env.secret_key)
-    return (data.data.email)
+    var data = await jwt.verify(token, process.env.secret_key);
+    return data.data.email;
   },
   isUserExist: async (email) => {
     var flag = false;
@@ -77,10 +77,10 @@ module.exports = {
 
   isUserInTeam: async (team_id, email) => {
     var flag = false;
-    var uid=md5(email)
+    var uid = md5(email);
     await firebase
       .database()
-      .ref("/team/" + team_id + "/members/"+uid+"/")
+      .ref("/team/" + team_id + "/members/" + uid + "/")
       .once("value", function (snap) {
         if (snap.exists()) {
           flag = true;
@@ -94,8 +94,8 @@ module.exports = {
       .database()
       .ref("/team/" + team_id + "/info/")
       .once("value", function (snap) {
-        if(snap.val().creator==email){
-          flag=true
+        if (snap.val().creator == email) {
+          flag = true;
         }
       });
     return flag;
@@ -106,7 +106,7 @@ module.exports = {
       .database()
       .ref("/team/" + team_id + "/info/")
       .once("value", function (snap) {
-          flag=snap.val().team_name
+        flag = snap.val().team_name;
       });
     return flag;
   },

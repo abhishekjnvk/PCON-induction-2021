@@ -4,9 +4,9 @@ const app = express();
 var cors = require("cors");
 const port = process.env.PORT || 8080;
 const mongoose = require("mongoose");
-const { FetchEvent, AddEvent,Search } = require("./App/Event");
+const { FetchEvent, AddEvent,Search,DeleteEvent } = require("./App/Event");
 const { Login,FirebaseLogin } = require("./App/Login");
-const { CreateTeam,AddUser,isUserInTeam,MyTeam,GetTeamMember } = require("./App/CreateTeam");
+const { CreateTeam,AddUser,isUserInTeam,MyTeam,GetTeamMember,DeleteTeam} = require("./App/CreateTeam");
 app.use(cors());
 
 app.get("/", FetchEvent);
@@ -20,7 +20,8 @@ app.get("/isExist",isUserInTeam);
 app.get("/myteam",MyTeam);
 app.get("/getTeamMember",GetTeamMember);
 
-app.post("/delete_event", async (req, res) => {});
+app.get("/deleteTeam",DeleteTeam);
+app.get("/delete_event", DeleteEvent);
 // app.post("/fetch_user", );
 
 

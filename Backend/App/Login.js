@@ -122,7 +122,7 @@ module.exports.FirebaseLogin = async (req, res) => {
               })
               .catch(function (error) {
                 res
-                  .json({ status: 1, message: error.message })
+                  .json({ status: 0, message: error.message })
                   .status(200)
                   .end();
               });

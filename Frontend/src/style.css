@@ -53,7 +53,43 @@ div.rbc-calendar
   min-width: auto;
 }
 
-
 .rbc-toolbar-label {
   font-weight: bolder;
+}
+
+.swal-button--okay {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+.swal-button--delete {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.swal-modal {
+  width: 400px;
+  opacity: 0;
+}
+
+.ant-message {
+  bottom: 20px;
+  top: initial;
+}
+.ant-message { top: 90px; }
+
+.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-toolbar-label:nth-child(2){
+  width: 200px;
+}
+
+
+.rbc-btn-group{ display: flex; flex-direction: row; }
+
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(1) { order: 2; }
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(2) { order: 1; }
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(3) { order: 3; }
+
+.ant-layout-header {
+  padding: 0 0px !important;
 }

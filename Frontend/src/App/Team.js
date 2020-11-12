@@ -4,6 +4,8 @@ import { message, Input } from "antd";
 import Cookies from "universal-cookie";
 import { Dimmer, Loader, Dropdown } from "semantic-ui-react";
 import { UserAddOutlined } from "@ant-design/icons";
+import "../style.css";
+import swal from "sweetalert";
 
 const cookies = new Cookies();
 const { Search } = Input;
@@ -17,6 +19,7 @@ class Team extends Component {
     selected_team: undefined,
     team_member: [],
     redirect: false,
+    isAdmin: false,
   };
 
   fetchTeam = () => {
@@ -26,7 +29,7 @@ class Team extends Component {
       redirect: "follow",
     };
     var token = cookies.get("webtoken");
-    fetch(`http://localhost:8080/myteam?token=${token}`, requestOptions)
+    fetch(`https://caleder-app-backend.herokuapp.com/myteam?token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -48,11 +51,7 @@ class Team extends Component {
             return true;
           });
           this.setState({ data: course_taught });
-          message.success({
-            content: "Fetched",
-            key: "loadingTeam",
-            duration: 1,
-          });
+          message.destroy();
         }
       })
       .catch((error) => console.log("error", error));
@@ -67,7 +66,7 @@ class Team extends Component {
       };
       var token = cookies.get("webtoken");
       fetch(
-        `http://localhost:8080/add_user?team_id=${this.state.selected_team}&email=${value}&right=member&token=${token}`,
+        `https://caleder-app-backend.herokuapp.com/add_user?team_id=${this.state.selected_team}&email=${value}&right=member&token=${token}`,
         requestOptions
       )
         .then((response) => response.json())
@@ -77,6 +76,9 @@ class Team extends Component {
               content: "User Added",
               key: "addingUser",
               duration: 3,
+            });
+            this.setState({
+              member_fetched: this.state.member_fetched * -1,
             });
           } else {
             message.warning({
@@ -97,15 +99,14 @@ class Team extends Component {
         redirect: "follow",
       };
       var token = cookies.get("webtoken");
-
       fetch(
-        `http://localhost:8080/getTeamMember?team_id=${this.state.selected_team}&token=${token}`,
+        `https://caleder-app-backend.herokuapp.com/getTeamMember?team_id=${this.state.selected_team}&token=${token}`,
         requestOptions
       )
         .then((response) => response.json())
         .then((result) => {
           console.log(result);
-          this.setState({ team_member: result.data });
+          this.setState({ team_member: result.data, isAdmin: result.isAdmin });
           this.setState({ member_fetched: 1 });
           console.log(this.state.team_member);
         })
@@ -115,7 +116,40 @@ class Team extends Component {
   handleChange = (value) => {
     this.setState({ value });
   };
+  deleteTeam=()=>{
+    var token = cookies.get("webtoken");
 
+    swal({
+      title: "Are you sure?",
+      text:
+        "Once deleted, you will not be able to recover team event and team data. Please create a backup of data",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((willDelete) => {
+      if (willDelete) {
+        var requestOptions = {
+          method: "GET",
+          redirect: "follow",
+        };
+        fetch(
+          `https://caleder-app-backend.herokuapp.com/deleteTeam?team_id=${this.state.selected_team}&token=${token}`,
+          requestOptions
+        )
+          .then((response) => response.json())
+          .then((result) => {
+            console.log(result);
+            if(result.status){
+              swal("Deleted", {
+                icon: "success",
+              });
+              this.setState({fetched:0})
+            }
+          })
+          .catch((error) => console.log("error", error));
+      }
+    });
+  }
   render() {
     // console.log(this.props.match.params.id);
     if (!(this.state.member_fetched === 1)) {
@@ -140,6 +174,7 @@ class Team extends Component {
                   member_fetched: this.state.member_fetched * -1,
                 });
               }}
+              style={{fontSize:"1.12em"}}
             />
           </div>
 
@@ -154,18 +189,26 @@ class Team extends Component {
                   <b className="mt-4">
                     <center>{this.state.selected_team_name}</center>
                   </b>
-                  <button className="btn btn-sm float-right btn-danger" onClick={()=>{message.warning("To Be implimented")}}>
-                    Delete Team
-                  </button>
-                  <label>Add Member</label>
-                  <Search
-                    placeholder="Enter Email to add user"
-                    enterButton={<UserAddOutlined />}
-                    size="large"
-                    onSearch={this.onAdd}
-                  />
-                  <br />
-                  <br />
+                  {this.state.isAdmin ? (
+                    <>
+                      <button
+                        className="btn btn-sm float-right btn-danger"
+                        onClick={this.deleteTeam}
+                      >
+                        Delete Team
+                      </button>
+                      <label>Add Member</label>
+                      <Search
+                        placeholder="Enter Email to add user"
+                        enterButton={<UserAddOutlined />}
+                        size="large"
+                        onSearch={this.onAdd}
+                      />
+                      <br />
+                      <br />
+                    </>
+                  ) : null}
+
                   <center>
                     <b>Member List</b>
                   </center>

@@ -13,7 +13,7 @@ export default class CreateTeam extends Component {
   state = {
     loading: false,
     fetched: false,
-    selected_team: undefined,
+    team_created: null,
     redirect: true,
     alert: false,
   };
@@ -29,7 +29,7 @@ export default class CreateTeam extends Component {
       };
       var token = cookies.get("webtoken");
       fetch(
-        `http://localhost:8080/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}`,
+        `https://caleder-app-backend.herokuapp.com/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}`,
         requestOptions
       )
         .then((response) => response.json())
@@ -40,7 +40,9 @@ export default class CreateTeam extends Component {
               key: "creatingteam",
               duration: 3,
             });
-            return <Redirect to={"/calender/" + team_id} />;
+            console.log(result)
+            this.setState({team_created:team_id})
+            // return (<Redirect to={"/calender/" + team_id} />);
           } else {
             this.setState({
               loading: false,
@@ -62,6 +64,9 @@ export default class CreateTeam extends Component {
 
   createTeam = () => {};
   render() {
+    if(this.state.team_created){
+      return((<Redirect to={"/calender/" + this.state.team_created} />))
+    }
     return (
       <div>
         <Container className="text-center">
@@ -91,12 +96,6 @@ export default class CreateTeam extends Component {
                 placeholder="Team ID"
               />
             </Form.Item>
-            {/* <Form.Item>
-              <Form.Item name="public" valuePropName="checked" noStyle>
-                <Checkbox checked={true}>Public Calaneder</Checkbox>
-              </Form.Item>
-            </Form.Item> */}
-
             {this.state.alert ? (
               <Alert message={this.state.alert_message} type="error" />
             ) : null}

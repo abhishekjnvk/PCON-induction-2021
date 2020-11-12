@@ -14,7 +14,7 @@ var {
   isUserInTeam,
   isTeamExist,
   geEmailFromToken,
-  getTeamName,
+  isUserTeamAdmin,
 } = require("./Helper/MasterHelper");
 
 module.exports.CreateTeam = async (req, res) => {
@@ -56,6 +56,7 @@ module.exports.CreateTeam = async (req, res) => {
     });
   }
 };
+
 
 module.exports.AddUser = async (req, res) => {
   try {
@@ -102,6 +103,38 @@ module.exports.isUserInTeam = async (req, res) => {
   var { team_id, email } = req.query;
   var status = await isUserInTeam(team_id, email);
   res.json({ response: "Success", status: 1, status });
+};
+
+module.exports.DeleteTeam = async (req, res) => {
+  try {
+    var { team_id, token } = req.query;
+    if (team_id && token) {
+      var email = await geEmailFromToken(token);
+      if (!(await isUserTeamAdmin(team_id, email))) {
+        var uid = md5(email);
+
+        await firebase.database()
+          .ref("/team/").child(team_id)
+          .remove();
+
+        console.log("Test2");
+        await firebase.database()
+          .ref("users/" + uid + "/team/" + team_id)
+          .remove();
+
+        res.json({ response: "Success", status: 1 });
+      } else {
+        res.json({ response: "Team id is not avialable", status: 0 });
+      }
+    } else {
+      res.json({ response: "Missing Required Feild", status: 0 });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: "Internal Server Error : " + err.message,
+      status: 0,
+    });
+  }
 };
 
 module.exports.MyTeam = async (req, res) => {
@@ -152,7 +185,7 @@ module.exports.GetTeamMember = async (req, res) => {
             var obj = snap.val();
             if (obj) {
               Object.keys(obj).forEach(async (key) => {
-                let team_obj = { email: obj[key].email,right: obj[key].right};
+                let team_obj = { email: obj[key].email, right: obj[key].right };
                 data.push(team_obj);
               });
             }
@@ -160,8 +193,9 @@ module.exports.GetTeamMember = async (req, res) => {
           .catch((error) => {
             res.json({ response: error, status: 0 });
           });
-        res.json({ response: "Success", status: 1, data });
-      }else{
+        var isAdmin = await isUserTeamAdmin(team_id, email);
+        res.json({ response: "Success", status: 1, data, isAdmin });
+      } else {
         res.json({ response: "You Are not in team", status: 0 });
       }
     } else {
