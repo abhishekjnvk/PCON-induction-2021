@@ -79,6 +79,7 @@ export default class AdminLogin extends Component {
   render() {
     return (
       <div className="mt-5 px-3">
+                  <center><b style={{fontSize:'25px'}}> Login/ Signup</b></center>
         <div
           className="col-lg-3 col-md-4 col-sm-10 mx-auto border border-primary p-4 px-2 rounded"
           style={{ marginTop: "15vh" }}
@@ -113,7 +114,7 @@ export default class AdminLogin extends Component {
               onClick={this.login}
               loading={this.state.loading}
             >
-              Login
+              <i className="fad fa-unlock-alt"></i> Login/ Signup
             </button>
           </div>
         </div>

@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import { Container } from "semantic-ui-react";
-// import {  } from "react-router-dom";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import Cookies from "universal-cookie";
 
 import { BrowserRouter as Link, Redirect } from "react-router-dom";
-import { Form, Input, Button, Checkbox, message, Alert } from "antd";
+import { Form, Input, Button, Switch, message, Alert } from "antd";
 
 const cookies = new Cookies();
 
@@ -18,6 +17,13 @@ export default class CreateTeam extends Component {
     alert: false,
   };
   onFinish = (values) => {
+    console.log(values);
+    if (values.private_calender) {
+      var private_calender = values.private_calender;
+    } else {
+      var private_calender = false;
+    }
+
     var team_name = values.team_name;
     var team_id = values.team_id;
     if (team_id && team_name) {
@@ -29,7 +35,7 @@ export default class CreateTeam extends Component {
       };
       var token = cookies.get("webtoken");
       fetch(
-        `https://caleder-app-backend.herokuapp.com/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}`,
+        `https://caleder-app-backend.herokuapp.com/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}&private_calender=${private_calender}`,
         requestOptions
       )
         .then((response) => response.json())
@@ -40,8 +46,8 @@ export default class CreateTeam extends Component {
               key: "creatingteam",
               duration: 3,
             });
-            console.log(result)
-            this.setState({team_created:team_id})
+            console.log(result);
+            this.setState({ team_created: team_id });
             // return (<Redirect to={"/calender/" + team_id} />);
           } else {
             this.setState({
@@ -64,8 +70,8 @@ export default class CreateTeam extends Component {
 
   createTeam = () => {};
   render() {
-    if(this.state.team_created){
-      return((<Redirect to={"/calender/" + this.state.team_created} />))
+    if (this.state.team_created) {
+      return <Redirect to={"/calender/" + this.state.team_created} />;
     }
     return (
       <div>
@@ -93,13 +99,17 @@ export default class CreateTeam extends Component {
             >
               <Input
                 prefix={<LockOutlined className="site-form-item-icon" />}
-                placeholder="Team ID"
+                placeholder="Unique Team ID"
               />
             </Form.Item>
+            
+            <Form.Item label="Private Team" name="private_calender">
+              <Switch title="Private Team's Calendar are accessible by team member only" />
+            </Form.Item>
+              
             {this.state.alert ? (
               <Alert message={this.state.alert_message} type="error" />
             ) : null}
-
             <Form.Item>
               <Button
                 type="primary"

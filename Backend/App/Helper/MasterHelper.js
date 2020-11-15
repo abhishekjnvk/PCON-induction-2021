@@ -89,14 +89,45 @@ module.exports = {
     return flag;
   },
   isUserTeamAdmin: async (team_id, email) => {
+    try {
+      let flag = false;
+      let uid = md5(email);
+      await firebase
+        .database()
+        .ref("/team/" + team_id + "/members/" + uid)
+        .once("value", function (snap) {
+          if (snap.exists())
+            if (snap.val().right === "admin") {
+              flag = true;
+            }
+        });
+
+      return flag;
+    } catch {
+      return false;
+    }
+  },
+  isUserTeamCreator: async (team_id, email) => {
     let flag = false;
-    let uid=md5(email)
     await firebase
       .database()
-      .ref("/team/" + team_id + "/members/"+uid)
+      .ref("/team/" + team_id + "/info/")
       .once("value", function (snap) {
-        if (snap.val().right === "admin") {
-          flag = true;
+        if (snap.exists())
+          if (snap.val().creator === email) {
+            flag = true;
+          }
+      });
+    return flag;
+  },
+  isCalanderPrivate: async (team_id) => {
+    let flag = false;
+    await firebase
+      .database()
+      .ref("/team/" + team_id + "/info/")
+      .once("value", function (snap) {
+        if (snap.exists()) {
+          flag = snap.val().private === "true";
         }
       });
     return flag;
@@ -107,7 +138,9 @@ module.exports = {
       .database()
       .ref("/team/" + team_id + "/info/")
       .once("value", function (snap) {
-        flag = snap.val().team_name;
+        if (snap.exists()) {
+          flag = snap.val().team_name;
+        }
       });
     return flag;
   },

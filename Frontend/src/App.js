@@ -10,8 +10,8 @@ import Cookies from "universal-cookie";
 import { message } from "antd";
 
 message.config({
-  top: 200,
-  duration: 2,
+  top: '85vh',
+  duration: 20,
   maxCount: 3,
 });
 

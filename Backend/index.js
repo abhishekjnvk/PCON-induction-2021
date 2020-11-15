@@ -4,22 +4,25 @@ const app = express();
 var cors = require("cors");
 const port = process.env.PORT || 8080;
 const mongoose = require("mongoose");
-const { FetchEvent, AddEvent,Search,DeleteEvent } = require("./App/Event");
+const { FetchEvent, AddEvent,Search,DeleteEvent,EditEvent } = require("./App/Event");
 const { Login,FirebaseLogin } = require("./App/Login");
-const { CreateTeam,AddUser,isUserInTeam,MyTeam,GetTeamMember,DeleteTeam} = require("./App/CreateTeam");
+const { CreateTeam,AddUser,DeleteUser,isUserInTeam,MyTeam,GetTeamMember,DeleteTeam,ChangeVisiblity} = require("./App/CreateTeam");
 app.use(cors());
 
 app.get("/", FetchEvent);
 app.post("/add_event", AddEvent);
+app.post("/edit_event", EditEvent);
 // app.get("/login", Login);
 app.get("/login", FirebaseLogin);
 app.get("/create_team", CreateTeam);
 app.get("/add_user", AddUser);
+app.get("/delete_user", DeleteUser);
 app.get("/search", Search);
 app.get("/isExist",isUserInTeam);
 app.get("/myteam",MyTeam);
 app.get("/getTeamMember",GetTeamMember);
 
+app.get("/changeVisiblity",ChangeVisiblity);
 app.get("/deleteTeam",DeleteTeam);
 app.get("/delete_event", DeleteEvent);
 // app.post("/fetch_user", );

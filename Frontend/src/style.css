@@ -8,7 +8,7 @@ div.rbc-calendar
   > div.rbc-toolbar:first-child
   > span.rbc-btn-group:first-child
   > button {
-  background-color: blue;
+  background-color: #2185d0;
   color: white;
 }
 .rbc-toolbar-label {
@@ -18,7 +18,7 @@ div.rbc-calendar
   > div.rbc-toolbar:first-child
   > span.rbc-btn-group:last-child
   > button {
-  background-color: blue;
+  background-color: #2185d0;
   color: white;
 }
 
@@ -29,7 +29,8 @@ div.rbc-calendar
   .rbc-row
   .rbc-date-cell.rbc-now.rbc-current
   a {
-  background-color: #7367f0;
+    
+  background-color: #2185d0;
   border-radius: 50%;
   padding: 0.4rem;
   color: #fff;
@@ -84,8 +85,8 @@ div.rbc-calendar
 
 .rbc-btn-group{ display: flex; flex-direction: row; }
 
-div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(1) { order: 2; }
-div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(2) { order: 1; }
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(1) { order: 2;border-radius: 0px; }
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(2) { order: 1; border-radius: 4px;}
 div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(3) { order: 3; }
 
 .ant-layout-header {
@@ -93,4 +94,29 @@ div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-ch
 }
 .swal2-popup .swal2-content {
   text-align: left !important;
+}
+
+
+
+
+html {
+  font-size: 1rem;
+}
+
+@include media-breakpoint-up(sm) {
+  html {
+    font-size: 1.2rem;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  html {
+    font-size: 1.4rem;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  html {
+    font-size: 1.6rem;
+  }
 }

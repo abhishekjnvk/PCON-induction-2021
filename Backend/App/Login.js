@@ -1,4 +1,3 @@
-var UserSchema = require("../schema/users");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 var firebase = require("firebase/app");
@@ -10,64 +9,6 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-module.exports.Login = async (req, res) => {
-  try {
-    const { email, password } = req.query;
-    // await UserSchema.create({email,password});
-    if (email && password) {
-      if (password.length > 4) {
-        const userRecord = await UserSchema.findOne({ email });
-        if (userRecord) {
-          if (password != userRecord.password) {
-            return res
-              .json({ status: 0, message: "Wrong Password" })
-              .status(200)
-              .end();
-          } else {
-            const token = await jwt.sign(
-              {
-                data: {
-                  role: "admin",
-                  email: userRecord.email,
-                },
-              },
-              process.env.secret_key,
-              { expiresIn: "30d" }
-            );
-            return res
-              .json({
-                status: 1,
-                message: "Authentication Successful",
-                token,
-              })
-              .status(200)
-              .end();
-          }
-        } else {
-          return res
-            .json({ status: 0, message: "Email Does Not exist" })
-            .status(200)
-            .end();
-        }
-      } else {
-        return res
-          .json({ status: 0, message: "Password is less than 4 character" })
-          .status(200)
-          .end();
-      }
-    } else {
-      return res
-        .json({ status: 0, message: "Missing Required Fields" })
-        .status(200)
-        .end();
-    }
-  } catch (err) {
-    res.status(500).json({
-      message: "Internal Server Error" + err.message,
-      status: 0,
-    });
-  }
-};
 
 module.exports.FirebaseLogin = async (req, res) => {
   try {
