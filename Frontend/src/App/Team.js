@@ -38,7 +38,6 @@ class Team extends Component {
     fetch(`https://caleder-app-backend.herokuapp.com/myteam?token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        // console.log(result);
         this.setState({ fetched: 1 });
         var course_taught = [];
         if (!result.data.length) {
@@ -72,7 +71,7 @@ class Team extends Component {
         method: "GET",
         redirect: "follow",
       };
-      // var token = cookies.get("webtoken");
+
       fetch(
         `https://caleder-app-backend.herokuapp.com/add_user?team_id=${this.state.selected_team}&email=${value.email}&right=${value.member_type}&token=${token}`,
         requestOptions
@@ -85,19 +84,12 @@ class Team extends Component {
               key: "addingUser",
               duration: 3,
             });
-            // this.setState({
-            //   member_fetched: this.state.member_fetched * -1,
-            // });
+
 
             var new_list = this.state.team_member;
             new_list.push(new_user_data);
             this.setState({ team_member: new_list });
 
-            // var new_list=this.state.team_member
-            // new_list.push({email:value.email,right:value.member_type})
-            // this.setState({
-            //   team_member: {new_list}
-            // })
           } else {
             message.warning({
               content: result.response,
@@ -123,7 +115,6 @@ class Team extends Component {
     var index_of_this_user = this.state.team_member.findIndex(
       (x) => x.email === this_user.email
     );
-    console.log(index_of_this_user);
     var new_list = this.state.team_member;
     new_list.splice(index_of_this_user, 1);
 
@@ -158,9 +149,8 @@ class Team extends Component {
                   duration: 3,
                 });
                 this.setState({ team_member: new_list });
-                // this.setState({
-                //   member_fetched: this.state.member_fetched * -1,
-                // });
+               
+                
               } else {
                 message.warning({
                   content: result.response,
@@ -171,6 +161,56 @@ class Team extends Component {
             })
             .catch((error) => console.log("error", error));
         }
+      }
+    });
+  };
+
+  ExitTeam = () => {
+    message.destroy()
+    if (this.state.isCreator) {
+      message.warning({content:"Team Creator Can't Leave a team",duration:5});
+      return;
+    }
+    swal({
+      title: "Are you sure?",
+      text:
+        "Do You really Want to Exit from " +
+        this.state.team_data.team_name,
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((willDelete) => {
+      if (willDelete) {
+          message.loading({ content: "Removing User", key: "addingUser" });
+          var requestOptions = {
+            method: "GET",
+            redirect: "follow",
+          };
+          fetch(
+            `https://caleder-app-backend.herokuapp.com/exit_team?team_id=${this.state.selected_team}&token=${token}`,
+            requestOptions
+          )
+            .then((response) => response.json())
+            .then((result) => {
+              if (result.status) {
+                message.destroy();
+
+                message.success({
+                  content: "Team Left",
+                  key: "addingUser",
+                  duration: 3,
+                });
+                window.location='/'
+              } else {
+                message.warning({
+                  content: result.response,
+                  key: "addingUser",
+                  duration: 5,
+                });
+              }
+            })
+            .catch((error) => console.log("error", error));
+        
       }
     });
   };
@@ -189,15 +229,14 @@ class Team extends Component {
         .then((response) => response.json())
         .then((result) => {
           if (result.status) {
-            // console.log(result);
             this.setState({
               team_member: result.data,
               isAdmin: result.isAdmin,
               team_data: result.team_data,
             });
             this.setState({ member_fetched: 1 });
-            if (result.team_data.creator == email) {
-              this.setState({ isCreator: 1 });
+            if (result.team_data.creator === email) {
+              this.setState({ isCreator: true });
             }
           } else {
             message.warning("Something Went Wrong");
@@ -214,7 +253,7 @@ class Team extends Component {
   };
 
   edit_team = async () => {
-    if (this.state.team_data.private == "true") {
+    if (this.state.team_data.private === "true") {
       var new_type = "false";
       var visiblity_text = "Make Public";
     } else {
@@ -276,17 +315,11 @@ class Team extends Component {
         )
           .then((response) => response.json())
           .then((result) => {
-            // console.log(result);
             if (result.status) {
               swal("Deleted", {
                 icon: "success",
               });
-              this.setState({ fetched: 0 });
-              this.setState({
-                member_fetched: this.state.member_fetched * -1,
-                selected_team: undefined,
-                data: [],
-              });
+              window.location = "/";
             }
           })
           .catch((error) => console.log("error", error));
@@ -295,7 +328,7 @@ class Team extends Component {
   };
 
   changeVisiblity = (team_type) => {
-    if (team_type == "true") {
+    if (team_type === "true") {
       var alert_text = `Once Team is Private calendar link is accessible by members of ${this.state.team_data.team_name} only`;
     } else {
       alert_text = `Once Team is Public calendar is accessible by anyone having its link`;
@@ -318,7 +351,6 @@ class Team extends Component {
         )
           .then((response) => response.json())
           .then((result) => {
-            // console.log(result);
             if (result.status) {
               if (result.status) {
                 swal("Change", {
@@ -339,7 +371,6 @@ class Team extends Component {
   };
 
   render() {
-    // console.log(this.props.match.params.id);
     if (!(this.state.member_fetched === 1)) {
       this.fetchMembers();
     }
@@ -353,19 +384,16 @@ class Team extends Component {
             <Dropdown
               placeholder="Select Team"
               fluid
-              search
               selection
               options={this.state.data}
               onChange={(e, data) => {
                 this.setState({
                   team_member: [],
-                  isAdmin: 0,
+                  isAdmin: false,
                   team_data: {},
-                  isCreator: 0,
-                });
-                this.setState({ selected_team: data.value });
-                this.setState({
+                  isCreator: false,
                   member_fetched: this.state.member_fetched * -1,
+                  selected_team: data.value
                 });
               }}
               style={{ fontSize: "1.12em" }}
@@ -387,7 +415,7 @@ class Team extends Component {
                         className="btn btn-sm btn-danger"
                         onClick={this.edit_team}
                       >
-                        Team Setting
+                        <i className="fal fa-cog"></i> Team Setting
                       </button>
                       </div>
                       <label>Add Member</label>
@@ -396,6 +424,7 @@ class Team extends Component {
                           <Form.Item
                             name="email"
                             label="Email"
+                            disabled={!(this.state.isCreator)}
                             rules={[{ required: true, type: "email" }]}
                           >
                             <Input />
@@ -415,14 +444,14 @@ class Team extends Component {
                             className="float-right"
                             htmlType="submit"
                           >
-                            Add User
+                            <i className="fal fa-user-plus"></i> Add User
                           </Button>
                         </Form>
                       </div>
                       <br />
                       <br />
                     </>
-                  ) : null}
+                  ) : <div className="text-center"><button onClick={()=>{this.ExitTeam()}} className="btn btn-danger">Exit Team</button></div>}
 
                   <center>
                     <b style={{ fontSize: "25px" }}>

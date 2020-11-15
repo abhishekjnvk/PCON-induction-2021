@@ -133,6 +133,42 @@ module.exports.DeleteUser = async (req, res) => {
   }
 };
 
+
+module.exports.ExitTeam = async (req, res) => {
+  try {
+    var { team_id, token } = req.query;
+    var email = await geEmailFromToken(token);
+    if (!(await isUserTeamCreator(team_id, email))) {
+      var uid = md5(email);
+      if (await isTeamExist(team_id)) {
+
+        firebase
+          .database()
+          .ref("users/" + uid + "/team/" + team_id)
+          .remove();
+
+        await firebase
+          .database()
+          .ref("/team/" + team_id + "/members/" + uid)
+          .remove();
+
+        res.json({ response: "Success", status: 1, team_id: team_id });
+      } else {
+        res.json({ response: "Team Doesn't Exist", status: 0 });
+      }
+    }else{
+      res.json({ response: "Team Creator Can't Leave a team", status: 0 });
+    }
+  } catch (err) {
+    res.status(200).json({
+      response: "Internal Server Error : " + err.message,
+      status: 0,
+    });
+  }
+};
+
+
+
 module.exports.ISTeamExist = async (req, res) => {
   var team_id = req.query.team_id;
   var status = await isTeamExist(team_id);

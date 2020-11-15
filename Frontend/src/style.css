@@ -86,7 +86,7 @@ div.rbc-calendar
 .rbc-btn-group{ display: flex; flex-direction: row; }
 
 div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(1) { order: 2;border-radius: 0px; }
-div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(2) { order: 1; border-radius: 4px;}
+div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(2) { order: 1; border-top-left-radius: 4px;border-bottom-left-radius: 4px;}
 div.container.mt-2.border.border-primary.rounded.py-2 > div.rbc-calendar:last-child > div.rbc-toolbar:first-child > span.rbc-btn-group:first-child > button:nth-child(3) { order: 3; }
 
 .ant-layout-header {

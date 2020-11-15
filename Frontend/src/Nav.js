@@ -50,7 +50,7 @@ const NavigationBar = (props) => {
             </Link>
         </Menu.Item>
         <Menu.Item key="2">
-          <Link to="/team"><i className="fad fa-users" ></i> Team</Link>
+          <Link to="/team"><i className="fad fa-users" ></i> My Team</Link>
         </Menu.Item>
         <Menu.Item key="3">
           <Link to="/Create-team">

@@ -63,7 +63,7 @@ class Calander extends React.Component {
           end
         )}">` +
         '<lable for="event_title">Event Name <span class="text-danger">*</span></lable><input id="event_title" class="swal2-input" placeholder="Event Title">' +
-        '<lable for="extra_info">Extra Info</lable><input id="extra_info" class="swal2-input" placeholder="Any Extra Info (example:Eevent Url)">' +
+        '<lable for="extra_info">Extra Info</lable><input id="extra_info" class="swal2-input" placeholder="(example:Event Url)">' +
         `<lable for="event_color">Event Color</lable><select id="event_color" class="swal2-input" placeholder="Event Lable">
          <option value="blue">Blue</option>
           <option value="red">Red</option>
@@ -104,7 +104,6 @@ class Calander extends React.Component {
             color: event_color,
           };
 
-          console.log(this_event);
 
           var requestOptions = {
             method: "POST",
@@ -138,6 +137,7 @@ class Calander extends React.Component {
                     },
                   ],
                 });
+                this.getEvent();
                 message.success({
                   content: "Event Added",
                   key: "event_adding",
@@ -156,6 +156,15 @@ class Calander extends React.Component {
   };
 
   editEvent = async (event) => {
+    if (!event.id) {
+      message.warning({
+        content:
+          "This is a recently added event please refresh this page to edit/delete this event",
+        duration: 5,
+      });
+      return;
+    }
+
     var index_of_this_event = this.state.events.findIndex(
       (x) => x.id === event.id
     );
@@ -307,6 +316,19 @@ class Calander extends React.Component {
   };
 
   deleteEvent = (event) => {
+    if (!event.id) {
+      message.warning({
+        content:
+          "This is a recently added event please refresh this page to delete or edit this event",
+        duration: 5,
+      });
+      return;
+    }
+
+    var index_of_this_event = this.state.events.findIndex(
+      (x) => x.id === event.id
+    );
+
     swal({
       title: "Are you sure?",
       text: "Once deleted, you will not be able to recover this event",
@@ -327,12 +349,17 @@ class Calander extends React.Component {
         )
           .then((response) => response.json())
           .then((result) => {
-            console.log(result);
             if (result.status) {
               swal("Deleted", {
                 icon: "success",
               });
-              this.setState({ fetched: false });
+              var new_array = this.state.events;
+              new_array.splice(index_of_this_event, 1);
+              this.setState({
+                events: new_array,
+              });
+            }else{
+              message.warning({content:"Unable to delete this event",duration:5})
             }
           })
           .catch((error) => console.log("error", error));
@@ -340,7 +367,6 @@ class Calander extends React.Component {
     });
   };
   viewEvent = (event) => {
-    console.log(event);
     let extra_info = "\n\n" + (event.extra || "");
     if (this.state.isAdmin) {
       var buttons = {

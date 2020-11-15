@@ -48,7 +48,6 @@ export default class CreateTeam extends Component {
             });
             console.log(result);
             this.setState({ team_created: team_id });
-            // return (<Redirect to={"/calender/" + team_id} />);
           } else {
             this.setState({
               loading: false,
@@ -117,7 +116,7 @@ export default class CreateTeam extends Component {
                 className="login-form-button"
                 loading={this.state.loading}
               >
-                Create Team
+                <i className="fad fa-users-medical"></i>&nbsp; Create Team
               </Button>
             </Form.Item>
           </Form>

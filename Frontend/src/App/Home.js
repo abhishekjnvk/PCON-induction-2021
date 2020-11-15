@@ -85,11 +85,12 @@ class Home extends Component {
           <Dropdown
             placeholder="Select Team"
             fluid
-            search
+            clearable
+            // search
             selection
             options={this.state.data}
             onChange={(e, data) => {
-              this.setState({ selected_team: data.value });
+              this.setState({ redirect: false,selected_team: data.value });
             }}
             style={{fontSize:"1.2em"}}
           />
