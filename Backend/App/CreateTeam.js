@@ -1,6 +1,5 @@
 require("firebase/auth");
 require("firebase/database");
-var uniqid = require("uniqid");
 var md5 = require("md5");
 
 var { firebaseConfig } = require("./Constants/Firebase");
@@ -22,6 +21,7 @@ module.exports.CreateTeam = async (req, res) => {
   try {
     var { team_name, team_id, token, private_calender } = req.query;
     if (team_id && team_name && token) {
+      team_id=team_id.toLowerCase()
       if (!(await isTeamExist(team_id))) {
         var email = await geEmailFromToken(token);
         var uid = md5(email);

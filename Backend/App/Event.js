@@ -1,4 +1,8 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
+
+const Cryptr = require("cryptr");
+const cryptr = new Cryptr(process.env.eventsecret_key);
 var uniqid = require("uniqid");
 var { getUserId } = require("./Helper/MasterHelper");
 require("firebase/auth");
@@ -22,6 +26,7 @@ var database = firebase.database();
 module.exports.FetchEvent = async (req, res) => {
   try {
     var { team_id, token } = req.query;
+    team_id = team_id.toLowerCase();
 
     if (token) {
       var email = await geEmailFromToken(token);
@@ -58,11 +63,11 @@ module.exports.FetchEvent = async (req, res) => {
                 Object.keys(obj).forEach((key) => {
                   let team_obj = {
                     id: key,
-                    start: obj[key].start,
-                    end: obj[key].end,
-                    title: obj[key].title,
-                    extra: obj[key].extra,
-                    color: obj[key].color,
+                    start: cryptr.decrypt(obj[key].start),
+                    end: cryptr.decrypt(obj[key].end),
+                    title: cryptr.decrypt(obj[key].title),
+                    extra: cryptr.decrypt(obj[key].extra),
+                    color: cryptr.decrypt(obj[key].color),
                   };
                   data.push(team_obj);
                 });
@@ -104,15 +109,23 @@ module.exports.AddEvent = async (req, res) => {
     var token = req.query.token;
     var obj = JSON.parse(req.query.event);
     var team_id = req.query.team_id;
-
+    team_id = team_id.toLowerCase();
     if (obj && team_id && token) {
+      var { start, end, title, color, extra } = obj;
+      var event_detail = {
+        start: cryptr.encrypt(start),
+        end: cryptr.encrypt(end),
+        title: cryptr.encrypt(title),
+        color: cryptr.encrypt(color),
+        extra: cryptr.encrypt(extra),
+      };
       var email = await geEmailFromToken(token);
 
       if (await isUserTeamAdmin(team_id, email)) {
         if (await isTeamExist(team_id)) {
           await database
             .ref("/team/" + team_id + "/event/" + uniqid())
-            .set(obj, function (error) {
+            .set(event_detail, function (error) {
               if (error) {
                 console.log(error);
               } else {
@@ -145,16 +158,24 @@ module.exports.EditEvent = async (req, res) => {
     var token = req.query.token;
     var obj = JSON.parse(req.query.event);
     var team_id = req.query.team_id;
+    team_id = team_id.toLowerCase();
     var event_id = req.query.event_id;
 
-    if (obj && team_id && token&&event_id) {
+    if (obj && team_id && token && event_id) {
       var email = await geEmailFromToken(token);
-
+      var { start, end, title, color, extra } = obj;
+      var event_detail = {
+        start: cryptr.encrypt(start),
+        end: cryptr.encrypt(end),
+        title: cryptr.encrypt(title),
+        color: cryptr.encrypt(color),
+        extra: cryptr.encrypt(extra),
+      };
       if (await isUserTeamAdmin(team_id, email)) {
         if (await isTeamExist(team_id)) {
           await database
             .ref("/team/" + team_id + "/event/" + event_id)
-            .set(obj, function (error) {
+            .set(event_detail, function (error) {
               if (error) {
                 console.log(error);
               } else {
@@ -187,7 +208,7 @@ module.exports.DeleteEvent = async (req, res) => {
     var token = req.query.token;
     var team_id = req.query.team_id;
     var event_id = req.query.event_id;
-
+    team_id = team_id.toLowerCase();
     if (event_id && team_id && token) {
       var email = await geEmailFromToken(token);
 
