@@ -10,7 +10,7 @@ import Cookies from "universal-cookie";
 import { message } from "antd";
 
 message.config({
-  top: '85vh',
+  top: "65vh",
   duration: 20,
   maxCount: 3,
 });
@@ -18,11 +18,7 @@ message.config({
 const cookies = new Cookies();
 
 var token = cookies.get("webtoken");
-if (token) {
-  var home = <Route exact path="/" component={Home} />;
-} else {
-  home = <Route exact path="/" component={AdminLogin} />;
-}
+
 
 export default class App extends Component {
   render() {
@@ -31,15 +27,25 @@ export default class App extends Component {
         <NavigationBar />
         <div>
           <Switch>
-            <Route path="/login">
+
+          <Route path="/login">
               <AdminLogin />
             </Route>
-            <Route path="/team/" component={Team} />
-            <Route path="/create-team">
-              <CreateTeam />
-            </Route>
+
             <Route exact path="/calender/:id" component={Calander} />
-            {home}
+            {token ? (
+              <>
+                <Route path="/team/" component={Team} />
+                <Route path="/create-team">
+                  <CreateTeam />
+                </Route>
+                <Route exact path="/" component={Home} />
+              </>
+            ) : (
+              <Route path="/*">
+                <AdminLogin />
+              </Route>
+            )}
           </Switch>
         </div>
       </Router>

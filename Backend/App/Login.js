@@ -1,16 +1,12 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-var firebase = require("firebase/app");
-require("firebase/auth");
-require("firebase/database");
 var md5 = require("md5");
-var { firebaseConfig } = require("./Constants/Firebase");
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const pool = require("./Db_config");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.google_key);
+var { isUserExist } = require("./Helper/MasterHelper");
 
-
-module.exports.FirebaseLogin = async (req, res) => {
+module.exports.Login = async (req, res) => {
   try {
     var { email, password } = req.query;
     const token = await jwt.sign(
@@ -23,11 +19,16 @@ module.exports.FirebaseLogin = async (req, res) => {
       { expiresIn: "30d" }
     );
     if (password.length > 5) {
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password)
-        .then((response) => {
-          
+      result = await pool.query(
+        `SELECT email FROM user WHERE email='${email}'`
+      );
+      if (result.length) {
+        result = await pool.query(
+          `SELECT email FROM user WHERE email='${email}' AND password='${md5(
+            password
+          )}'`
+        );
+        if (result.length) {
           res
             .json({
               status: 1,
@@ -36,64 +37,27 @@ module.exports.FirebaseLogin = async (req, res) => {
             })
             .status(200)
             .end();
-        })
-        .catch(function (error) {
-          if (error.code == "auth/user-not-found") {
-            //creating useraccount
-            firebase
-              .auth()
-              .createUserWithEmailAndPassword(email, password)
-              .then((response) => {
-                //creating user node in database
-                firebase
-                  .database()
-                  .ref("users/" + md5(email) + "/info")
-                  .set({
-                    email,
-                  });
-
-                res
-                  .json({
-                    status: 1,
-                    message: "User Created Successfully",
-                    token: token,
-                  })
-                  .status(200)
-                  .end();
-              })
-              .catch(function (error) {
-                res
-                  .json({ status: 0, message: error.message })
-                  .status(200)
-                  .end();
-              });
-          } else {
-            if (error.code == "auth/wrong-password") {
-              res
-                .json({
-                  status: 0,
-                  message: "Invalid Credentials",
-                  errorCode: "Login_5",
-                })
-                .status(200)
-                .end();
-            } else if (error.code == "auth/user-disabled") {
-              res.json({
-                status: 0,
-                message: "User is disabled Please contact support team",
-                errorCode: "Login_4",
-              });
-            } else {
-              res.json({
-                status: 0,
-                message: "Something Went Wrong",
-                extraMessage: error.message,
-                extraCode: error.code,
-                errorCode: "Login_3",
-              });
-            }
-          }
-        });
+        } else {
+          res.status(200).json({
+            message: "Invalid Credentials",
+            status: 0,
+          });
+        }
+      } else {
+        await pool.query(
+          `INSERT INTO \`user\`(\`email\`, \`password\`, \`date\`, \`name\`) VALUES ('${email}','${md5(
+            password
+          )}','${new Date().toLocaleString()}','')`
+        );
+        res
+          .json({
+            status: 1,
+            message: "successfully Logged in",
+            token: token,
+          })
+          .status(200)
+          .end();
+      }
     } else {
       res
         .json({
@@ -107,6 +71,49 @@ module.exports.FirebaseLogin = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Internal Server Error" + err.message,
+      status: 0,
+      errorCode: "Login_1",
+    });
+  }
+};
+
+module.exports.GoogleLogin = async (req, res) => {
+  try {
+    var { accesstoken } = req.query;
+    const ticket = await client.verifyIdToken({
+      idToken: accesstoken,
+      audience:process.env.google_key
+    });
+    const payload = ticket.getPayload();
+    var name = payload.name;
+    var email = payload.email;
+    var picture = payload.picture;
+
+    const token = await jwt.sign(
+      {
+        data: {
+          email: email,
+          name:name
+        },
+      },
+      process.env.secret_key,
+      { expiresIn: "10d" }
+    );
+
+    if (!(await isUserExist(email))) {
+      await pool.query(
+        `INSERT INTO \`user\`(\`email\`, \`password\`, \`date\`, \`name\`, \`picture\`) VALUES ('${email}','','${new Date().toLocaleString()}','${name}','${picture}')`
+      );
+    }
+
+    res.status(200).json({
+      status: 1,
+      message: "successfully Logged in",
+      token: token,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Internal Server Error " + err.message,
       status: 0,
       errorCode: "Login_1",
     });

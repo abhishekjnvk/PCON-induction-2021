@@ -1,15 +1,7 @@
 require("dotenv").config();
-require("firebase/auth");
-require("firebase/database");
-var md5 = require("md5");
+const pool = require("../Db_config");
 const jwt = require("jsonwebtoken");
-
-var { firebaseConfig } = require("../Constants/Firebase");
-var firebase = require("firebase/app");
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+var cache = require('memory-cache');
 
 module.exports = {
   FilterString: async function (str) {
@@ -33,115 +25,77 @@ module.exports = {
     return res;
   },
 
-  getUserId: async function (email) {
-    admin
-      .auth()
-      .getUserByEmail(email)
-      .then(function (userRecord) {
-        console.log("Successfully fetched user data:", userRecord.toJSON());
-      })
-      .catch(function (error) {
-        console.log("Error fetching user data:", error);
-      });
-  },
-
-  geEmailFromToken: async function (token) {
+  getEmailFromToken: async function (token) {
     var data = await jwt.verify(token, process.env.secret_key);
     return data.data.email;
   },
   isUserExist: async (email) => {
     var flag = false;
-    await firebase
-      .auth()
-      .fetchSignInMethodsForEmail(email)
-      .then(function (providers) {
-        if (providers.length) {
-          flag = true;
-        }
-      });
+    var result = await pool.query(
+      `SELECT email FROM user WHERE email='${email}'`
+    );
+    if (result.length > 0) {
+      flag = true;
+    }
     return flag;
+  },
+  getTeamData:async(team_id)=>{
+    var team_data = cache.get(`team_data_of_${team_id}`);
+    if (!team_data) {
+      team_data = [];
+      var team_result = await pool.query(
+        `SELECT team_id,team_name,creator,creation_date,private FROM team WHERE team_id='${team_id}'`
+      );
+      team_data = team_result[0];
+      cache.put(`team_data_of_${team_id}`, team_data);
+    }
+    return team_data
   },
   isTeamExist: async (team_id) => {
     var flag = false;
-    await firebase
-      .database()
-      // .ref()
-      .ref("/team/" + team_id + "/info")
-      .once("value", function (snap) {
-        if (snap.exists()) {
-          flag = true;
-        }
-      });
+    var team_data = await module.exports.getTeamData(team_id)
+    if (team_data) {
+      flag = true;
+    }
     return flag;
   },
 
   isUserInTeam: async (team_id, email) => {
     var flag = false;
-    var uid = md5(email);
-    await firebase
-      .database()
-      .ref("/team/" + team_id + "/members/" + uid + "/")
-      .once("value", function (snap) {
-        if (snap.exists()) {
-          flag = true;
-        }
-      });
+    var result = await pool.query(
+      `SELECT * FROM member WHERE team_id='${team_id}' AND email='${email}'`
+    );
+    if (result.length > 0) {
+      flag = true;
+    }
     return flag;
   },
   isUserTeamAdmin: async (team_id, email) => {
-    try {
-      let flag = false;
-      let uid = md5(email);
-      await firebase
-        .database()
-        .ref("/team/" + team_id + "/members/" + uid)
-        .once("value", function (snap) {
-          if (snap.exists())
-            if (snap.val().right === "admin") {
-              flag = true;
-            }
-        });
-
-      return flag;
-    } catch {
-      return false;
+    var flag = false;
+    var result = await pool.query(
+      `SELECT * FROM member WHERE team_id='${team_id}' AND email='${email}' AND (\`right\`='creator' OR \`right\`='admin')`
+    );
+    if (result.length > 0) {
+      flag = true;
     }
+    return flag;
   },
   isUserTeamCreator: async (team_id, email) => {
     let flag = false;
-    await firebase
-      .database()
-      .ref("/team/" + team_id + "/info/")
-      .once("value", function (snap) {
-        if (snap.exists())
-          if (snap.val().creator === email) {
-            flag = true;
-          }
-      });
+    var team_data = await module.exports.getTeamData(team_id)
+    if (team_data.creator === email) {
+      flag = true;
+    }
     return flag;
   },
   isCalanderPrivate: async (team_id) => {
     let flag = false;
-    await firebase
-      .database()
-      .ref("/team/" + team_id + "/info/")
-      .once("value", function (snap) {
-        if (snap.exists()) {
-          flag = snap.val().private === "true";
-        }
-      });
-    return flag;
-  },
-  getTeamName: async (team_id) => {
-    var flag = "";
-    await firebase
-      .database()
-      .ref("/team/" + team_id + "/info/")
-      .once("value", function (snap) {
-        if (snap.exists()) {
-          flag = snap.val().team_name;
-        }
-      });
+    var team_data = await module.exports.getTeamData(team_id)
+    if (team_data) {
+      if (team_data.private == "true") {
+        flag = true;
+      }
+    }
     return flag;
   },
 };

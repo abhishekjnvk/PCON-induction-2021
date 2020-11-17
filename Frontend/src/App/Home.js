@@ -25,7 +25,7 @@ class Home extends Component {
       redirect: "follow",
     };
     var token = cookies.get("webtoken");
-    fetch(`https://caleder-app-backend.herokuapp.com/myteam?token=${token}`, requestOptions)
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/myteam?token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -35,7 +35,7 @@ class Home extends Component {
           message.warning({
             content: "You are not in any team please create a team",
             key: "loadingTeam",
-            duration: 2,
+            duration: 5,
           });
         } else {
           result.data.map((data) => {

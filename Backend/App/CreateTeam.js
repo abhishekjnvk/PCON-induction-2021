@@ -1,19 +1,12 @@
-require("firebase/auth");
-require("firebase/database");
-var md5 = require("md5");
-
-var { firebaseConfig } = require("./Constants/Firebase");
-var firebase = require("firebase/app");
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
+const pool = require("./Db_config");
+var cache = require("memory-cache");
 var {
   isUserExist,
   isUserInTeam,
   isTeamExist,
-  geEmailFromToken,
+  getEmailFromToken,
   isUserTeamAdmin,
+  getTeamData,
   isUserTeamCreator,
 } = require("./Helper/MasterHelper");
 
@@ -21,34 +14,29 @@ module.exports.CreateTeam = async (req, res) => {
   try {
     var { team_name, team_id, token, private_calender } = req.query;
     if (team_id && team_name && token) {
-      team_id=team_id.toLowerCase()
-      if (!(await isTeamExist(team_id))) {
-        var email = await geEmailFromToken(token);
-        var uid = md5(email);
-        firebase
-          .database()
-          .ref("/team/" + team_id + "/info")
-          .set({
-            team_name: team_name,
-            creator: email,
-            private: private_calender,
-            creation_date: new Date().toString(),
-            last_active: new Date().toString(),
-          });
+      team_id = team_id.toLowerCase();
+      var format = /[ `!@#$%^&*()_+\-=[]{};':"\\|,.<>\/?~]/;
 
-        firebase
-          .database()
-          .ref("users/" + uid + "/team/" + team_id)
-          .set({ right: "admin" });
+      if (!(/\s/.test(team_id) || format.test(team_id))) {
+        if (!(await isTeamExist(team_id))) {
+          var email = await getEmailFromToken(token);
 
-        await firebase
-          .database()
-          .ref("/team/" + team_id + "/members/" + uid)
-          .set({ email, right: "admin" });
+          pool.query(
+            `INSERT INTO member(\`team_id\`, \`email\`, \`right\`, \`date\`) VALUES ('${team_id}','${email}','creator','${new Date().toLocaleString()}')`
+          );
 
-        res.json({ response: "Success", status: 1, team_id: team_id });
+          await pool.query(
+            `INSERT INTO team(\`team_id\`, \`team_name\`, \`creation_date\`, \`last_active\`, \`creator\`, \`private\`) VALUES ('${team_id}','${team_name}','${new Date().toLocaleString()}','${new Date().toLocaleString()}','${email}','${private_calender}')`
+          );
+          
+          cache.del(`team_of_${email}`);
+
+          res.json({ response: "Success", status: 1, team_id: team_id });
+        } else {
+          res.json({ response: "Team id is not avialable", status: 0 });
+        }
       } else {
-        res.json({ response: "Team id is not avialable", status: 0 });
+        res.json({ response: "Invalid Team ID", status: 0 });
       }
     } else {
       res.json({ response: "Missing Required Feild", status: 0 });
@@ -63,31 +51,30 @@ module.exports.CreateTeam = async (req, res) => {
 
 module.exports.AddUser = async (req, res) => {
   try {
-    var { team_id, email, right,token } = req.query;
-    admin_email = await geEmailFromToken(token);
-    var uid = md5(email);
+    var { team_id, email, right, token } = req.query;
+    admin_email = await getEmailFromToken(token);
     if (await isTeamExist(team_id)) {
       if (await isUserTeamCreator(team_id, admin_email)) {
+        if (await isUserExist(email)) {
+          if (!(await isUserInTeam(team_id, email))) {
+            cache.del(`member_of_${team_id}`);
+            cache.del(`team_of_${email}`);
 
-      if (await isUserExist(email)) {
-        if (!(await isUserInTeam(team_id, email))) {
-          firebase
-            .database()
-            .ref("/team/" + team_id + "/members/" + uid)
-            .set({ email, right });
+            pool.query(
+              `INSERT INTO member(\`team_id\`, \`email\`, \`right\`, \`date\`) VALUES ('${team_id}','${email}','${right}','${new Date().toLocaleString()}')`
+            );
 
-          await firebase
-            .database()
-            .ref("users/" + uid + "/team/" + team_id)
-            .set({ right });
-
-          res.json({ response: "Success", status: 1, team_id: team_id });
+            res.json({ response: "Success", status: 1, team_id: team_id });
+          } else {
+            res.json({ response: "User Already in Team", status: 0 });
+          }
         } else {
-          res.json({ response: "User Already in Team", status: 0 });
+          res.json({
+            response: "There is no any user assosiated with this email",
+            status: 0,
+          });
         }
       } else {
-        res.json({ response: "There is no any user assosiated with this email", status: 0 });
-      }}else{
         res.json({ response: "You are not a team creator", status: 0 });
       }
     } else {
@@ -104,25 +91,21 @@ module.exports.AddUser = async (req, res) => {
 module.exports.DeleteUser = async (req, res) => {
   try {
     var { team_id, email, token } = req.query;
-    admin_email = await geEmailFromToken(token);
+    admin_email = await getEmailFromToken(token);
     if (await isUserTeamCreator(team_id, admin_email)) {
-      var uid = md5(email);
       if (await isTeamExist(team_id)) {
-        firebase
-          .database()
-          .ref("users/" + uid + "/team/" + team_id)
-          .remove();
+        cache.del(`member_of_${team_id}`);
+        cache.del(`team_of_${email}`);
 
-        await firebase
-          .database()
-          .ref("/team/" + team_id + "/members/" + uid)
-          .remove();
+        pool.query(
+          `DELETE FROM member WHERE team_id='${team_id}' AND email='${email}'`
+        );
 
         res.json({ response: "Success", status: 1, team_id: team_id });
       } else {
         res.json({ response: "Team Doesn't Exist", status: 0 });
       }
-    }else{
+    } else {
       res.json({ response: "You Are Not Creator of team", status: 0 });
     }
   } catch (err) {
@@ -133,30 +116,24 @@ module.exports.DeleteUser = async (req, res) => {
   }
 };
 
-
 module.exports.ExitTeam = async (req, res) => {
   try {
     var { team_id, token } = req.query;
-    var email = await geEmailFromToken(token);
+    var email = await getEmailFromToken(token);
     if (!(await isUserTeamCreator(team_id, email))) {
-      var uid = md5(email);
       if (await isTeamExist(team_id)) {
+        cache.del(`member_of_${team_id}`);
+        cache.del(`team_of_${email}`);
 
-        firebase
-          .database()
-          .ref("users/" + uid + "/team/" + team_id)
-          .remove();
-
-        await firebase
-          .database()
-          .ref("/team/" + team_id + "/members/" + uid)
-          .remove();
+        await pool.query(
+          `DELETE FROM member WHERE team_id='${team_id}' AND email='${email}'`
+        );
 
         res.json({ response: "Success", status: 1, team_id: team_id });
       } else {
         res.json({ response: "Team Doesn't Exist", status: 0 });
       }
-    }else{
+    } else {
       res.json({ response: "Team Creator Can't Leave a team", status: 0 });
     }
   } catch (err) {
@@ -167,43 +144,25 @@ module.exports.ExitTeam = async (req, res) => {
   }
 };
 
-
-
-module.exports.ISTeamExist = async (req, res) => {
-  var team_id = req.query.team_id;
-  var status = await isTeamExist(team_id);
-  res.json({ response: "Success", status: 1, status });
-};
-
-module.exports.isUserInTeam = async (req, res) => {
-  var { team_id, email } = req.query;
-  var status = await isUserInTeam(team_id, email);
-  res.json({ response: "Success", status: 1, status });
-};
-
 module.exports.DeleteTeam = async (req, res) => {
   try {
     var { team_id, token } = req.query;
     if (team_id && token) {
-      var email = await geEmailFromToken(token);
+      var email = await getEmailFromToken(token);
       if (await isUserTeamCreator(team_id, email)) {
-        await firebase
-          .database()
-          .ref()
-          .child("/team/" + team_id + "/members")
-          .once("value", function (snap) {
-            if (snap.val()) {
-              var uid_list = Object.keys(snap.val());
-              uid_list.map((uid) => {
-                firebase
-                  .database()
-                  .ref("users/" + uid + "/team/" + team_id)
-                  .remove();
-              });
-            }
-          });
-        await firebase.database().ref("/team/").child(team_id).remove();
+        pool.query(`DELETE FROM member WHERE team_id='${team_id}'`);
+        pool.query(`DELETE FROM team WHERE team_id='${team_id}'`);
+        await pool.query(`DELETE FROM event WHERE team_id='${team_id}'`);
+
         res.json({ response: "Success", status: 1 });
+
+        cache.del(`team_data_of_${team_id}`);
+        cache.del(`event_of_${team_id}`);
+        var data = cache.get(`member_of_${team_id}`);
+        data.forEach((element) => {
+          cache.del(`team_of_${element.email}`);
+        });
+        cache.del(`member_of_${team_id}`);
       } else {
         res.json({ response: "You are not owner Of this team", status: 0 });
       }
@@ -220,11 +179,16 @@ module.exports.DeleteTeam = async (req, res) => {
 
 module.exports.ChangeVisiblity = async (req, res) => {
   try {
-    var { team_id, token,team_type } = req.query;
-    if (team_id && token&&team_type) {
-      var email = await geEmailFromToken(token);
+    var { team_id, token, team_type } = req.query;
+    if (team_id && token && team_type) {
+      var email = await getEmailFromToken(token);
       if (await isUserTeamCreator(team_id, email)) {
-        await firebase.database().ref("/team/"+team_id+"/info").child('private').set(team_type);
+        cache.del(`team_data_of_${team_id}`);
+
+        await pool.query(
+          `UPDATE team set \`private\`='${team_type}' WHERE team_id='${team_id}'`
+        );
+
         res.json({ response: "Success", status: 1 });
       } else {
         res.json({ response: "You are not owner Of this team", status: 0 });
@@ -244,24 +208,19 @@ module.exports.MyTeam = async (req, res) => {
   try {
     var { token } = req.query;
     if (token) {
-      var email = await geEmailFromToken(token);
-      var uid = md5(email);
-      let data = [];
-      await firebase
-        .database()
-        .ref("/users/" + uid + "/team/")
-        .once("value", function (snap) {
-          var obj = snap.val();
-          if (obj) {
-            Object.keys(obj).forEach(async (key) => {
-              let team_obj = { team_id: key };
-              data.push(team_obj);
-            });
-          }
-        })
-        .catch((error) => {
-          res.json({ response: error, status: 1, data });
+      var email = await getEmailFromToken(token);
+      var data = cache.get(`team_of_${email}`);
+      if (!data) {
+        data = [];
+        var result = await pool.query(
+          `SELECT team_id,\`right\` FROM member WHERE email='${email}'`
+        );
+        result.forEach(async (key) => {
+          data.push(key);
         });
+        cache.put(`team_of_${email}`, data);
+      }
+
       res.json({ response: "Success", status: 1, data });
     } else {
       res.json({ response: "Missing Required Feilds", status: 1, data });
@@ -278,37 +237,23 @@ module.exports.GetTeamMember = async (req, res) => {
   try {
     var { token, team_id } = req.query;
     if (token) {
-      var email = await geEmailFromToken(token);
+      var email = await getEmailFromToken(token);
       if (await isUserInTeam(team_id, email)) {
-        let data = [];
-        await firebase
-          .database()
-          .ref("/team/" + team_id + "/members/")
-          .once("value", function (snap) {
-            var obj = snap.val();
-            if (obj) {
-              Object.keys(obj).forEach(async (key) => {
-                let team_obj = { email: obj[key].email, right: obj[key].right };
-                data.push(team_obj);
-              });
-            }
-          })
-          .catch((error) => {
-            res.json({ response: error, status: 0 });
+        var data = cache.get(`member_of_${team_id}`);
+        if (!data) {
+          data = [];
+          var result = await pool.query(
+            `SELECT email,team_id,\`right\` FROM member WHERE team_id='${team_id}'`
+          );
+          result.forEach(async (key) => {
+            data.push(key);
           });
-        let team_data = [];
-        await firebase
-          .database()
-          .ref()
-          .child("/team/" + team_id + "/info")
-          .once("value", function (snap) {
-            if (!snap.exists()) {
-              calendar_exist = false;
-            } else {
-              team_data = snap.val();
-            }
-          });
+          cache.put(`member_of_${team_id}`, data);
+        }
+        var team_data = await getTeamData(team_id)
+
         var isAdmin = await isUserTeamAdmin(team_id, email);
+
         res.json({ response: "Success", status: 1, data, isAdmin, team_data });
       } else {
         res.json({ response: "You Are not in team", status: 0 });

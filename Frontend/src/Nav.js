@@ -1,6 +1,7 @@
 import React from "react";
 import Cookies from "universal-cookie";
 import swal from "sweetalert";
+import { GoogleLogout } from "react-google-login";
 
 // eslint-disable-next-line
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
@@ -47,21 +48,29 @@ const NavigationBar = (props) => {
         <Menu.Item key="1">
           <Link to="/">
             <i className="fad fa-home-lg-alt"></i> Home
-            </Link>
+          </Link>
         </Menu.Item>
         <Menu.Item key="2">
-          <Link to="/team"><i className="fad fa-users" ></i> My Team</Link>
+          <Link to="/team">
+            <i className="fad fa-users"></i> My Team
+          </Link>
         </Menu.Item>
         <Menu.Item key="3">
           <Link to="/Create-team">
             <i className="fad fa-users-medical"></i> Create Team
-            </Link>
+          </Link>
         </Menu.Item>
         <Menu.Item key="4" className="float-right">
-          <Link to="#" onClick={logout}>
-            <i className="fad fa-power-off"></i> (
-            <small className="text-light">{email}</small>)
-          </Link>
+          <GoogleLogout
+          clientId={process.env.REACT_APP_GOOGLE_KEY}
+          buttonText="Logout"
+            render={renderProps => (
+              <Link onClick={renderProps.onClick} disabled={renderProps.disabled}><i className="fad fa-power-off"></i> (
+                <small className="text-light">{email}</small>)</Link>
+            )}        
+            onLogoutSuccess={logout}
+            onFailure={logout}
+          ></GoogleLogout>
         </Menu.Item>
       </>
     );
@@ -73,7 +82,6 @@ const NavigationBar = (props) => {
       <Header>
         <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
           {nav_comp}
-          {/* <Menu.Item key="4">{nav_comp}</Menu.Item> */}
         </Menu>
       </Header>
     </Layout>

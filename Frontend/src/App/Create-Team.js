@@ -21,11 +21,18 @@ export default class CreateTeam extends Component {
     if (values.private_calender) {
       var private_calender = values.private_calender;
     } else {
-      var private_calender = false;
+      private_calender = false;
     }
 
     var team_name = values.team_name;
     var team_id = values.team_id;
+    var format = /[ `!@#$%^&*()_+\-=[]{};':"\\|,.<>\/?~]/;
+
+    if(/\s/.test(team_id)||format.test(team_id)){
+      message.warning({content:"Invalid Team ID"})
+      return
+    }
+
     if (team_id && team_name) {
       this.setState({ loading: true });
       message.loading({ content: "Please Wait", key: "creatingteam" });
@@ -35,7 +42,7 @@ export default class CreateTeam extends Component {
       };
       var token = cookies.get("webtoken");
       fetch(
-        `https://caleder-app-backend.herokuapp.com/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}&private_calender=${private_calender}`,
+        `${process.env.REACT_APP_BACKEND_URL}/create_team?team_name=${team_name}&team_id=${team_id}&token=${token}&private_calender=${private_calender}`,
         requestOptions
       )
         .then((response) => response.json())

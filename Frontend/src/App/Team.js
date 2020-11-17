@@ -35,7 +35,7 @@ class Team extends Component {
       redirect: "follow",
     };
     // var token = cookies.get("webtoken");
-    fetch(`https://caleder-app-backend.herokuapp.com/myteam?token=${token}`, requestOptions)
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/myteam?token=${token}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         this.setState({ fetched: 1 });
@@ -73,7 +73,7 @@ class Team extends Component {
       };
 
       fetch(
-        `https://caleder-app-backend.herokuapp.com/add_user?team_id=${this.state.selected_team}&email=${value.email}&right=${value.member_type}&token=${token}`,
+        `${process.env.REACT_APP_BACKEND_URL}/add_user?team_id=${this.state.selected_team}&email=${value.email}&right=${value.member_type}&token=${token}`,
         requestOptions
       )
         .then((response) => response.json())
@@ -137,7 +137,7 @@ class Team extends Component {
             redirect: "follow",
           };
           fetch(
-            `https://caleder-app-backend.herokuapp.com/delete_user?team_id=${this.state.selected_team}&email=${user_email}&token=${token}`,
+            `${process.env.REACT_APP_BACKEND_URL}/delete_user?team_id=${this.state.selected_team}&email=${user_email}&token=${token}`,
             requestOptions
           )
             .then((response) => response.json())
@@ -187,7 +187,7 @@ class Team extends Component {
             redirect: "follow",
           };
           fetch(
-            `https://caleder-app-backend.herokuapp.com/exit_team?team_id=${this.state.selected_team}&token=${token}`,
+            `${process.env.REACT_APP_BACKEND_URL}/exit_team?team_id=${this.state.selected_team}&token=${token}`,
             requestOptions
           )
             .then((response) => response.json())
@@ -223,7 +223,7 @@ class Team extends Component {
       };
       // var token = cookies.get("webtoken");
       fetch(
-        `https://caleder-app-backend.herokuapp.com/getTeamMember?team_id=${this.state.selected_team}&token=${token}`,
+        `${process.env.REACT_APP_BACKEND_URL}/getTeamMember?team_id=${this.state.selected_team}&token=${token}`,
         requestOptions
       )
         .then((response) => response.json())
@@ -310,7 +310,7 @@ class Team extends Component {
           redirect: "follow",
         };
         fetch(
-          `https://caleder-app-backend.herokuapp.com/deleteTeam?team_id=${this.state.selected_team}&token=${token}`,
+          `${process.env.REACT_APP_BACKEND_URL}/deleteTeam?team_id=${this.state.selected_team}&token=${token}`,
           requestOptions
         )
           .then((response) => response.json())
@@ -346,7 +346,7 @@ class Team extends Component {
           redirect: "follow",
         };
         fetch(
-          `https://caleder-app-backend.herokuapp.com/changeVisiblity?team_id=${this.state.selected_team}&token=${token}&team_type=${team_type}`,
+          `${process.env.REACT_APP_BACKEND_URL}/changeVisiblity?team_id=${this.state.selected_team}&token=${token}&team_type=${team_type}`,
           requestOptions
         )
           .then((response) => response.json())

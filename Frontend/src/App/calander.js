@@ -64,7 +64,7 @@ class Calander extends React.Component {
         )}">` +
         '<lable for="event_title">Event Name <span class="text-danger">*</span></lable><input id="event_title" class="swal2-input" placeholder="Event Title">' +
         '<lable for="extra_info">Extra Info</lable><input id="extra_info" class="swal2-input" placeholder="(example:Event Url)">' +
-        `<lable for="event_color">Event Color</lable><select id="event_color" class="swal2-input" placeholder="Event Lable">
+        `<lable for="event_color">Event Theme</lable><select id="event_color" class="swal2-input" placeholder="Event Lable">
          <option value="blue">Blue</option>
           <option value="red">Red</option>
           <option value="green">Green</option>
@@ -73,8 +73,6 @@ class Calander extends React.Component {
           <option value="yellow">Yellow</option>
         </select>`,
       focusConfirm: false,
-      backdrop: "rgba(0,182,255,0.5)",
-
       preConfirm: () => {
         return [
           document.getElementById("event_start").value,
@@ -110,7 +108,7 @@ class Calander extends React.Component {
             redirect: "follow",
           };
           fetch(
-            `https://caleder-app-backend.herokuapp.com/add_event?event=${JSON.stringify(
+            `${process.env.REACT_APP_BACKEND_URL}/add_event?event=${JSON.stringify(
               this_event
             )}&token=${token}&team_id=${team_id}`,
             requestOptions
@@ -229,7 +227,7 @@ class Calander extends React.Component {
             redirect: "follow",
           };
           fetch(
-            `https://caleder-app-backend.herokuapp.com/edit_event?event=${JSON.stringify(
+            `${process.env.REACT_APP_BACKEND_URL}/edit_event?event=${JSON.stringify(
               this_event
             )}&token=${token}&team_id=${team_id}&event_id=${event.id}`,
             requestOptions
@@ -278,7 +276,7 @@ class Calander extends React.Component {
     if (token) {
       data = data + "&token=" + token;
     }
-    fetch(`https://caleder-app-backend.herokuapp.com/?${data}`, requestOptions)
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/?${data}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === 1) {
@@ -344,7 +342,7 @@ class Calander extends React.Component {
         var team_id = this.props.match.params.id;
 
         fetch(
-          `https://caleder-app-backend.herokuapp.com/delete_event?team_id=${team_id}&token=${token}&event_id=${event.id}`,
+          `${process.env.REACT_APP_BACKEND_URL}/delete_event?team_id=${team_id}&token=${token}&event_id=${event.id}`,
           requestOptions
         )
           .then((response) => response.json())
