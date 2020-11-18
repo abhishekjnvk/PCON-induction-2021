@@ -14,7 +14,7 @@ if (token) {
   var decoded = jwt_decode(token);
   var email = decoded.data.email;
 }
-console.log(email);
+
 const { Header } = Layout;
 var logout = () => {
   swal({
@@ -51,23 +51,33 @@ const NavigationBar = (props) => {
           </Link>
         </Menu.Item>
         <Menu.Item key="2">
+          <Link to="/my-schedules">
+            <i className="far fa-calendar-week"></i> My Schedule
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="3">
           <Link to="/team">
             <i className="fad fa-users"></i> My Team
           </Link>
         </Menu.Item>
-        <Menu.Item key="3">
+        <Menu.Item key="4">
           <Link to="/Create-team">
             <i className="fad fa-users-medical"></i> Create Team
           </Link>
         </Menu.Item>
-        <Menu.Item key="4" className="float-right">
+        <Menu.Item key="5" className="float-right">
           <GoogleLogout
-          clientId={process.env.REACT_APP_GOOGLE_KEY}
-          buttonText="Logout"
-            render={renderProps => (
-              <Link onClick={renderProps.onClick} disabled={renderProps.disabled}><i className="fad fa-power-off"></i> (
-                <small className="text-light">{email}</small>)</Link>
-            )}        
+            clientId={process.env.REACT_APP_GOOGLE_KEY}
+            buttonText="Logout"
+            render={(renderProps) => (
+              <Link
+                onClick={renderProps.onClick}
+                disabled={renderProps.disabled}
+              >
+                <i className="fad fa-power-off"></i> (
+                <small className="text-light">{email}</small>)
+              </Link>
+            )}
             onLogoutSuccess={logout}
             onFailure={logout}
           ></GoogleLogout>
@@ -76,7 +86,6 @@ const NavigationBar = (props) => {
     );
   }
 
-  console.log(token);
   return (
     <Layout className="layout">
       <Header>

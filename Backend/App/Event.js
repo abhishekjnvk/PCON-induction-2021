@@ -10,13 +10,15 @@ var {
   isUserInTeam,
   isTeamExist,
   isUserTeamAdmin,
-  getEmailFromToken,getTeamData
+  getEmailFromToken,
+  getTeamData,
+  getUsersTeam,
+  getTeamEvent,
 } = require("./Helper/MasterHelper");
 
 module.exports.FetchEvent = async (req, res) => {
   try {
     var { team_id, token } = req.query;
-    team_id = team_id.toLowerCase();
 
     if (token) {
       var email = await getEmailFromToken(token);
@@ -27,34 +29,13 @@ module.exports.FetchEvent = async (req, res) => {
     }
 
     if (team_id) {
+      team_id = team_id.toLowerCase();
       var calendar_exist = true;
       if (!(await isCalanderPrivate(team_id)) || isMember) {
-        var team_data = await getTeamData(team_id)
+        var team_data = await getTeamData(team_id);
 
         if (team_data) {
-          var data = cache.get(`event_of_${team_id}`); //getting value from cache
-          if (!data) {
-            var data = [];
-
-            var result = await pool.query(
-              `SELECT * FROM event WHERE team_id='${team_id}'`
-            );
-
-            result.forEach(async (key) => {
-              let team_obj = {
-                id: key.event_id,
-                start: parseInt(key.start),
-                end: parseInt(key.end),
-                title: cryptr.decrypt(key.title),
-                extra: cryptr.decrypt(key.extra),
-                color: key.color,
-                created_by: key.created_by,
-              };
-              data.push(team_obj);
-            });
-
-            cache.put(`event_of_${team_id}`, data);
-          }
+          var data = await getTeamEvent(team_id);
         } else {
           calendar_exist = false;
         }
@@ -71,6 +52,46 @@ module.exports.FetchEvent = async (req, res) => {
           message: "This is a Private Calender",
           status: 0,
         });
+      }
+    } else {
+      res.status(200).json({
+        message: "Missing Required Field",
+        status: 0,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: "Internal Server Error" + err.message,
+      status: 0,
+    });
+  }
+};
+
+module.exports.MySchedule = async (req, res) => {
+  try {
+    var { token } = req.query;
+
+    if (token) {
+      var email = await getEmailFromToken(token);
+      var user_team = await getUsersTeam(email);
+      all_data = [];
+      var flag = 0;
+
+      user_team.forEach(async (element) => {
+        var data = await getTeamEvent(element.team_id);
+        data.forEach(element => {
+          all_data.push(element);
+        });
+        flag++;
+        if (user_team.length == flag) {
+          res
+          .status(200)
+          .json({ data:all_data,status: 1 });
+        }
+      });
+
+      if(user_team.length==0){
+        res.status(200).json({  });
       }
     } else {
       res.status(200).json({

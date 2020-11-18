@@ -50,7 +50,7 @@ class Team extends Component {
           result.data.map((data) => {
             course_taught.push({
               key: data.team_id,
-              text: data.team_id,
+              text: data.team_name+" - "+data.team_id,
               value: data.team_id,
             });
             return true;

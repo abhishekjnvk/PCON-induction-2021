@@ -7,14 +7,14 @@ var {
   getEmailFromToken,
   isUserTeamAdmin,
   getTeamData,
-  isUserTeamCreator,
+  isUserTeamCreator,getUsersTeam,
 } = require("./Helper/MasterHelper");
 
 module.exports.CreateTeam = async (req, res) => {
   try {
     var { team_name, team_id, token, private_calender } = req.query;
     if (team_id && team_name && token) {
-      team_id = team_id.toLowerCase();
+      // team_id = team_id.toLowerCase();
       var format = /[ `!@#$%^&*()_+\-=[]{};':"\\|,.<>\/?~]/;
 
       if (!(/\s/.test(team_id) || format.test(team_id))) {
@@ -209,18 +209,7 @@ module.exports.MyTeam = async (req, res) => {
     var { token } = req.query;
     if (token) {
       var email = await getEmailFromToken(token);
-      var data = cache.get(`team_of_${email}`);
-      if (!data) {
-        data = [];
-        var result = await pool.query(
-          `SELECT team_id,\`right\` FROM member WHERE email='${email}'`
-        );
-        result.forEach(async (key) => {
-          data.push(key);
-        });
-        cache.put(`team_of_${email}`, data);
-      }
-
+      var data =  await getUsersTeam(email)
       res.json({ response: "Success", status: 1, data });
     } else {
       res.json({ response: "Missing Required Feilds", status: 1, data });

@@ -8,6 +8,7 @@ import swal from "sweetalert";
 import { message, Alert } from "antd";
 import { Dimmer, Loader, Segment } from "semantic-ui-react";
 import Swal from "sweetalert2";
+import CopyText from "react-copy-text";
 
 import Cookies from "universal-cookie";
 const cookies = new Cookies();
@@ -21,6 +22,7 @@ class Calander extends React.Component {
       fetched: false,
       isMember: false,
       isAdmin: false,
+      team_data: {},
     };
   }
 
@@ -51,8 +53,15 @@ class Calander extends React.Component {
     var team_id = this.props.match.params.id;
 
     const { value: formValues } = await Swal.fire({
-      confirmButtonText: `Save`,
+      customClass: {
+        confirmButton: "btn btn-success",
+        cancelButton: "btn btn-danger",
+      },
+      confirmButtonText: 'Add Event',
       title: "Add Event",
+      showCloseButton: true,
+      showCancelButton: true,
+
       html:
         `<lable for="event_start">Event Starts at <span class="text-danger">*</span></lable>
         <input id="event_start" type="datetime-local" placeholder="Event Start Date" class="swal2-input" value="${this.formatdate(
@@ -102,13 +111,14 @@ class Calander extends React.Component {
             color: event_color,
           };
 
-
           var requestOptions = {
             method: "POST",
             redirect: "follow",
           };
           fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/add_event?event=${JSON.stringify(
+            `${
+              process.env.REACT_APP_BACKEND_URL
+            }/add_event?event=${JSON.stringify(
               this_event
             )}&token=${token}&team_id=${team_id}`,
             requestOptions
@@ -227,7 +237,9 @@ class Calander extends React.Component {
             redirect: "follow",
           };
           fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/edit_event?event=${JSON.stringify(
+            `${
+              process.env.REACT_APP_BACKEND_URL
+            }/edit_event?event=${JSON.stringify(
               this_event
             )}&token=${token}&team_id=${team_id}&event_id=${event.id}`,
             requestOptions
@@ -293,6 +305,7 @@ class Calander extends React.Component {
             fetched: true,
             isAdmin: result.isAdmin,
             isMember: result.isMember,
+            team_data: result.team_data,
           });
         } else {
           Swal.fire({
@@ -356,8 +369,11 @@ class Calander extends React.Component {
               this.setState({
                 events: new_array,
               });
-            }else{
-              message.warning({content:"Unable to delete this event",duration:5})
+            } else {
+              message.warning({
+                content: "Unable to delete this event",
+                duration: 5,
+              });
             }
           })
           .catch((error) => console.log("error", error));
@@ -420,6 +436,9 @@ class Calander extends React.Component {
     return { className: eventColors[event.color] };
   };
 
+  onButtonClick = () => this.setState({ textToCopy: window.location.href });
+  onCopied = (result) =>
+    message.success({ content: "Link Copied", duration: 3 });
   render() {
     if (!this.state.fetched) {
       this.getEvent();
@@ -433,30 +452,47 @@ class Calander extends React.Component {
     }
     const localizer = momentLocalizer(moment);
     return (
-      <div className="container mt-2 border border-primary rounded py-2">
-        {this.state.isAdmin ? (
-          <div className="text-right my-2">
-            <button className="btn btn-secondary" onClick={this.handleSelect}>
-              <i className="fad fa-calendar-plus"></i> Create Event
-            </button>
-          </div>
-        ) : null}
+      <div className="container border border-primary rounded py-2">
+        <div className="text-center">
+          <b
+            style={{ fontSize: "35px", textTransform: "capitalize" }}
+            onClick={this.onButtonClick}
+          >
+            {this.state.team_data.team_name}
+          </b>
+          <CopyText text={this.state.textToCopy} onCopied={this.onCopied} />
+
+          {this.state.isAdmin ? (
+            <>
+              {/* <div className="text-right my-2"> */}
+              <button
+                className="float-right btn btn-secondary"
+                onClick={this.handleSelect}
+              >
+                <i className="fad fa-calendar-plus"></i>
+              </button>
+              {/* </div> */}
+            </>
+          ) : null}
+        </div>
 
         {this.state.alert_message ? (
           <Alert message={this.state.alert_message} type="error" />
         ) : (
-          <Calendar
-            selectable={this.state.isAdmin}
-            localizer={localizer}
-            events={this.state.events}
-            defaultView={Views.MONTH}
-            startAccessor="start"
-            eventPropGetter={this.handleEventColors}
-            endAccessor="end"
-            defaultDate={moment().toDate()}
-            onSelectEvent={this.viewEvent}
-            onSelectSlot={this.handleSelect}
-          />
+          <>
+            <Calendar
+              selectable={this.state.isAdmin}
+              localizer={localizer}
+              events={this.state.events}
+              defaultView={Views.MONTH}
+              startAccessor="start"
+              eventPropGetter={this.handleEventColors}
+              endAccessor="end"
+              defaultDate={moment().toDate()}
+              onSelectEvent={this.viewEvent}
+              onSelectSlot={this.handleSelect}
+            />
+          </>
         )}
       </div>
     );

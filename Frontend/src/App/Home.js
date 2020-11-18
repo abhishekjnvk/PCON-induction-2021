@@ -5,6 +5,7 @@ import { Redirect } from "react-router-dom";
 import { message } from "antd";
 import Cookies from "universal-cookie";
 import "../style.css";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 const cookies = new Cookies();
 
@@ -25,7 +26,10 @@ class Home extends Component {
       redirect: "follow",
     };
     var token = cookies.get("webtoken");
-    fetch(`${process.env.REACT_APP_BACKEND_URL}/myteam?token=${token}`, requestOptions)
+    fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/myteam?token=${token}`,
+      requestOptions
+    )
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -41,14 +45,13 @@ class Home extends Component {
           result.data.map((data) => {
             course_taught.push({
               key: data.team_id,
-              text: data.team_id,
+              text: data.team_name + " - " + data.team_id,
               value: data.team_id,
             });
             return true;
           });
           this.setState({ data: course_taught });
-          message.destroy()
-          
+          message.destroy();
         }
       })
       .catch((error) => console.log("error", error));
@@ -81,7 +84,9 @@ class Home extends Component {
       return (
         <div className="col-lg-3 mx-auto mt-2 text-center">
           {this.renderRedirect()}
-          <center style={{marginTop:"100px",padding:'25px'}}>Please Select a Team to View Calander</center>
+          <center style={{ marginTop: "100px", padding: "25px" }}>
+            Please Select a Team to View Calander
+          </center>
           <Dropdown
             placeholder="Select Team"
             fluid
@@ -90,9 +95,9 @@ class Home extends Component {
             selection
             options={this.state.data}
             onChange={(e, data) => {
-              this.setState({ redirect: false,selected_team: data.value });
+              this.setState({ redirect: false, selected_team: data.value });
             }}
-            style={{fontSize:"1.2em"}}
+            style={{ fontSize: "1.2em" }}
           />
           <Button color="primary" className="mt-2" onClick={this.setRedirect}>
             <Icon name="calendar alternate outline" />

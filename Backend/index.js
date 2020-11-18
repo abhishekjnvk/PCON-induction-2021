@@ -3,9 +3,10 @@ const express = require("express");
 const app = express();
 var cors = require("cors");
 const port = process.env.PORT || 8080;
-const { FetchEvent, AddEvent,DeleteEvent,EditEvent } = require("./App/Event");
-const { GoogleLogin,checkGoogle } = require("./App/Login");
+const { FetchEvent, AddEvent,DeleteEvent,EditEvent,MySchedule } = require("./App/Event");
+const { GoogleLogin, } = require("./App/Login");
 const { CreateTeam,AddUser,DeleteUser,ExitTeam,MyTeam,GetTeamMember,DeleteTeam,ChangeVisiblity} = require("./App/CreateTeam");
+
 app.use(cors({origin: [process.env.dev_url,process.env.prod_url,process.env.prods_url]}));
 
 app.get("/", FetchEvent);
@@ -21,6 +22,8 @@ app.get("/getTeamMember",GetTeamMember);
 app.get("/changeVisiblity",ChangeVisiblity);
 app.get("/deleteTeam",DeleteTeam);
 app.get("/delete_event", DeleteEvent);
+
+app.get("/my_event", MySchedule);
 
 
 

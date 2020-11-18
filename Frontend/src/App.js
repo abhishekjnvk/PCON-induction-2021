@@ -8,7 +8,7 @@ import CreateTeam from "./App/Create-Team";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Cookies from "universal-cookie";
 import { message } from "antd";
-
+import MySchedules from "./App/My-schedules"
 message.config({
   top: "65vh",
   duration: 20,
@@ -38,6 +38,9 @@ export default class App extends Component {
                 <Route path="/team/" component={Team} />
                 <Route path="/create-team">
                   <CreateTeam />
+                </Route>
+                <Route path="/my-schedules">
+                  <MySchedules />
                 </Route>
                 <Route exact path="/" component={Home} />
               </>

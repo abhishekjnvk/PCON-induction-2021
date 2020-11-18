@@ -6,68 +6,12 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.google_key);
 var { isUserExist } = require("./Helper/MasterHelper");
 
-module.exports.Login = async (req, res) => {
+module.exports.WATCHEVENT = async (req, res) => {
   try {
-    var { email, password } = req.query;
-    const token = await jwt.sign(
-      {
-        data: {
-          email: email,
-        },
-      },
-      process.env.secret_key,
-      { expiresIn: "30d" }
-    );
-    if (password.length > 5) {
-      result = await pool.query(
-        `SELECT email FROM user WHERE email='${email}'`
-      );
-      if (result.length) {
-        result = await pool.query(
-          `SELECT email FROM user WHERE email='${email}' AND password='${md5(
-            password
-          )}'`
-        );
-        if (result.length) {
-          res
-            .json({
-              status: 1,
-              message: "successfully Logged in",
-              token: token,
-            })
-            .status(200)
-            .end();
-        } else {
-          res.status(200).json({
-            message: "Invalid Credentials",
-            status: 0,
-          });
-        }
-      } else {
-        await pool.query(
-          `INSERT INTO \`user\`(\`email\`, \`password\`, \`date\`, \`name\`) VALUES ('${email}','${md5(
-            password
-          )}','${new Date().toLocaleString()}','')`
-        );
-        res
-          .json({
-            status: 1,
-            message: "successfully Logged in",
-            token: token,
-          })
-          .status(200)
-          .end();
-      }
-    } else {
-      res
-        .json({
-          status: 0,
-          message: "Password is too weak",
-          errorCode: "Login_2",
-        })
-        .status(200)
-        .end();
-    }
+    var start=Math.floor(new Date())+(1000*60*10)          //10 minutes
+    console.log(start)
+    var result=await pool.query(`SELECT * from event WHERE start<'${start}'`);
+    res.status(200).json({result});
   } catch (err) {
     res.status(500).json({
       message: "Internal Server Error" + err.message,
