@@ -160,7 +160,7 @@ class MySchedules extends React.Component {
             <center style={{ fontSize: "25px" }}>My Schedule</center>
           </b>
           <Calendar
-            selectable={this.state.isAdmin}
+            selectable={false}
             localizer={localizer}
             events={this.state.events}
             defaultView={Views.MONTH}

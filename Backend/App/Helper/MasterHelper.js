@@ -1,7 +1,8 @@
 require("dotenv").config();
 const pool = require("../Db_config");
 const jwt = require("jsonwebtoken");
-var cache = require('memory-cache');
+var cache = require("memory-cache");
+const nodemailer = require("nodemailer");
 
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr(process.env.eventsecret_key);
@@ -42,7 +43,7 @@ module.exports = {
     }
     return flag;
   },
-  getTeamData:async(team_id)=>{
+  getTeamData: async (team_id) => {
     var team_data = cache.get(`team_data_of_${team_id}`);
     if (!team_data) {
       team_data = [];
@@ -52,11 +53,11 @@ module.exports = {
       team_data = team_result[0];
       cache.put(`team_data_of_${team_id}`, team_data);
     }
-    return team_data
+    return team_data;
   },
   isTeamExist: async (team_id) => {
     var flag = false;
-    var team_data = await module.exports.getTeamData(team_id)
+    var team_data = await module.exports.getTeamData(team_id);
     if (team_data) {
       flag = true;
     }
@@ -85,7 +86,7 @@ module.exports = {
   },
   isUserTeamCreator: async (team_id, email) => {
     let flag = false;
-    var team_data = await module.exports.getTeamData(team_id)
+    var team_data = await module.exports.getTeamData(team_id);
     if (team_data.creator === email) {
       flag = true;
     }
@@ -93,7 +94,6 @@ module.exports = {
   },
 
   getUsersTeam: async (email) => {
-
     var data = cache.get(`team_of_${email}`);
     if (!data) {
       data = [];
@@ -108,12 +108,14 @@ module.exports = {
     return data;
   },
 
-  getTeamEvent:async(team_id)=>{
+  getTeamEvent: async (team_id) => {
     var data = cache.get(`event_of_${team_id}`); //getting value from cache
     if (!data) {
       var data = [];
 
-      var result = await pool.query(`SELECT * FROM event WHERE team_id='${team_id}'`);
+      var result = await pool.query(
+        `SELECT * FROM event WHERE team_id='${team_id}'`
+      );
 
       result.forEach(async (key) => {
         let team_obj = {
@@ -131,12 +133,12 @@ module.exports = {
 
       cache.put(`event_of_${team_id}`, data);
     }
-    return data
+    return data;
   },
 
   isCalanderPrivate: async (team_id) => {
     let flag = false;
-    var team_data = await module.exports.getTeamData(team_id)
+    var team_data = await module.exports.getTeamData(team_id);
     if (team_data) {
       if (team_data.private == "true") {
         flag = true;
@@ -144,4 +146,51 @@ module.exports = {
     }
     return flag;
   },
+  usersInTeam: async (team_id) => {
+    var data = cache.get(`member_of_${team_id}`);
+    if (!data) {
+      data = [];
+      var result = await pool.query(
+        `SELECT email,team_id,\`right\` FROM member WHERE team_id='${team_id}'`
+      );
+      result.forEach(async (key) => {
+        data.push(key);
+      });
+      cache.put(`member_of_${team_id}`, data);
+    }
+    return data;
+  },
+  emailsOFTeam: async (team_id) => {
+    var email_array = cache.get(`emails_of_${team_id}`);
+
+    if (!email_array) {
+      var email_array = [];
+      var data = await module.exports.usersInTeam(team_id);
+      data.forEach(async (user) => {
+        email_array.push(user.email);
+      });
+      cache.put(`emails_of_${team_id}`, email_array);
+    }
+    return email_array;
+  },
+  sendMail:(email,team_id,start)=>{
+  let transporter = nodemailer.createTransport({
+    host: "smtp.hostinger.in",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: "abhishek@kksnit.in", // generated ethereal user
+      pass: "Abhishek@1234#", // generated ethereal password
+    },
+  });
+  let info = transporter.sendMail({
+    from: '"Abhishek Kumar" <abhishek@kksnit.in>',
+    to: email.join(),
+    subject: "Event Reminder",
+    text: "Hola! You have a event ",
+    html: `<span style="font-size:20px">Hola!<br/> You have a event for <b>${team_id}</b> From <b>${new Date(parseInt(start))}</b></spam>`,
+  });
+
+  console.log("sent to")
+  }
 };

@@ -78,7 +78,8 @@ module.exports.MySchedule = async (req, res) => {
       var flag = 0;
 
       user_team.forEach(async (element) => {
-        var data = await getTeamEvent(element.team_id);
+        let team_id = (element.team_id).toLowerCase();
+        var data = await getTeamEvent(team_id);
         data.forEach(element => {
           all_data.push(element);
         });
