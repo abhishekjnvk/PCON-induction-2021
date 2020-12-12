@@ -5,10 +5,12 @@ import Home from "./App/Home";
 import Team from "./App/Team";
 import AdminLogin from "./App/Login";
 import CreateTeam from "./App/Create-Team";
+import Error404 from './404';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Cookies from "universal-cookie";
 import { message } from "antd";
-import MySchedules from "./App/My-schedules"
+import MySchedules from "./App/My-schedules";
+
 message.config({
   top: "65vh",
   duration: 20,
@@ -19,7 +21,6 @@ const cookies = new Cookies();
 
 var token = cookies.get("webtoken");
 
-
 export default class App extends Component {
   render() {
     return (
@@ -27,11 +28,6 @@ export default class App extends Component {
         <NavigationBar />
         <div>
           <Switch>
-
-          <Route path="/login">
-              <AdminLogin />
-            </Route>
-
             <Route exact path="/calender/:id" component={Calander} />
             {token ? (
               <>
@@ -45,10 +41,13 @@ export default class App extends Component {
                 <Route exact path="/" component={Home} />
               </>
             ) : (
-              <Route path="/*">
+              <Route exact path="/">
                 <AdminLogin />
               </Route>
             )}
+            <Route path="/*">
+              <Error404 />
+            </Route>
           </Switch>
         </div>
       </Router>

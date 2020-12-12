@@ -81,10 +81,10 @@ export default class CreateTeam extends Component {
     }
     return (
       <div>
-        <Container className="text-center">
+        <Container className="text-center mt-5 py-5 py-md-2 mt-md-2">
           <Form
             name="normal_login"
-            className="login-form col-lg-4 mx-auto shadow-lg p-4 mb-5 bg-white rounded pt-3 rounded mt-5"
+            className="login-form col-lg-4 mx-auto shadow-lg p-5 my-5 bg-white rounded pt-3 rounded"
             initialValues={{ remember: true }}
             onFinish={this.onFinish}
           >

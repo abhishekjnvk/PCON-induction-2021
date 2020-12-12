@@ -370,17 +370,19 @@ class Team extends Component {
     });
   };
 
+  componentDidMount(){
+    this.fetchTeam();
+  }
   render() {
     if (!(this.state.member_fetched === 1)) {
       this.fetchMembers();
     }
     if (!(this.state.fetched === 1)) {
-      this.fetchTeam();
       return <></>;
     } else {
       return (
         <>
-          <div className="col-lg-2 mx-auto mt-2 text-center">
+          <div className="col-lg-2 mx-auto text-center pt-5 pt-md-2 mt-5 mt-md-2">
             <Dropdown
               placeholder="Select Team"
               fluid
@@ -401,9 +403,9 @@ class Team extends Component {
           </div>
 
           {this.state.selected_team ? (
-            <div className="col-lg-4 mx-auto mt-4 shadow-lg p-3 mb-5 bg-white rounded" style={{ minHeight: "20vh" }} >
+            <div className="col-lg-4 mx-auto mt-2 shadow-lg p-3 mb-5 bg-white rounded" style={{ minHeight: "20vh" }} >
               {this.state.member_fetched === -1 ? (
-                <Dimmer active>
+                <Dimmer active style={{zIndex:"0"}}>
                   <Loader />
                 </Dimmer>
               ) : (
@@ -478,6 +480,10 @@ class Team extends Component {
                   ))}
                 </>
               )}
+              <br/>
+              <br/>
+              <br/>
+              <br/>
             </div>
           ) : null}
         </>

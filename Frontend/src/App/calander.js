@@ -26,6 +26,7 @@ class Calander extends React.Component {
     };
   }
 
+  // componentDidMount
   formatdate = (date) => {
     return new Date(date)
       .toLocaleString("sv-SE", {
@@ -57,11 +58,11 @@ class Calander extends React.Component {
         confirmButton: "btn btn-success",
         cancelButton: "btn btn-danger",
       },
+      
       confirmButtonText: 'Add Event',
       title: "Add Event",
       showCloseButton: true,
       showCancelButton: true,
-
       html:
         `<lable for="event_start">Event Starts at <span class="text-danger">*</span></lable>
         <input id="event_start" type="datetime-local" placeholder="Event Start Date" class="swal2-input" value="${this.formatdate(
@@ -436,14 +437,16 @@ class Calander extends React.Component {
     return { className: eventColors[event.color] };
   };
 
+  componentDidMount(){
+    this.getEvent();
+  }
   onButtonClick = () => this.setState({ textToCopy: window.location.href });
   onCopied = (result) =>
     message.success({ content: "Link Copied", duration: 3 });
   render() {
     if (!this.state.fetched) {
-      this.getEvent();
       return (
-        <Segment style={{ minHeight: "90vh" }}>
+        <Segment style={{ minHeight: "90vh",zIndex:0 }}>
           <Dimmer active>
             <Loader />
           </Dimmer>
@@ -452,7 +455,7 @@ class Calander extends React.Component {
     }
     const localizer = momentLocalizer(moment);
     return (
-      <div className="container border border-primary rounded py-2">
+      <div className="container border border-primary rounded py-5 py-md-2 my-4 my-md-2">
         <div className="text-center">
           <b
             style={{ fontSize: "35px", textTransform: "capitalize" }}

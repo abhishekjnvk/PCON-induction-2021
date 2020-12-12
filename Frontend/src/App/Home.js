@@ -6,6 +6,7 @@ import { message } from "antd";
 import Cookies from "universal-cookie";
 import "../style.css";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { Dimmer, Loader, Segment } from "semantic-ui-react";
 
 const cookies = new Cookies();
 
@@ -18,9 +19,12 @@ class Home extends Component {
     redirect: false,
   };
 
+  componentDidMount() {
+    this.fetchEvent();
+  }
+
   fetchEvent = () => {
     message.loading({ content: "Fetching Team list", key: "loadingTeam" });
-
     var requestOptions = {
       method: "GET",
       redirect: "follow",
@@ -73,13 +77,17 @@ class Home extends Component {
     if (this.state.redirect && this.state.selected_team) {
       return <Redirect to={"/calender/" + this.state.selected_team} />;
     }
-    // this.unsetRedirect
   };
 
   render() {
     if (!this.state.fetched) {
-      this.fetchEvent();
-      return <></>;
+      return (
+        <Segment style={{ minHeight: "90vh",zIndex:0 }}>
+          <Dimmer active>
+            <Loader />
+          </Dimmer>
+        </Segment>
+      );
     } else {
       return (
         <div className="col-lg-3 mx-auto mt-2 text-center">
@@ -99,7 +107,7 @@ class Home extends Component {
             }}
             style={{ fontSize: "1.2em" }}
           />
-          <Button color="primary" className="mt-2" onClick={this.setRedirect}>
+          <Button color="facebook" className="mt-2" onClick={this.setRedirect}>
             <Icon name="calendar alternate outline" />
             View Calender
           </Button>

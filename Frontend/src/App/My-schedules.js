@@ -85,6 +85,9 @@ class MySchedules extends React.Component {
       .catch((error) => console.log("error", error));
   };
 
+  componentDidMount(){
+    this.getEvent();
+  }
   viewEvent = (event) => {
     let extra_info = "\n\n" + (event.extra || "");
     if (this.state.isAdmin) {
@@ -143,9 +146,8 @@ class MySchedules extends React.Component {
 
   render() {
     if (!this.state.fetched) {
-      this.getEvent();
       return (
-        <Segment style={{ minHeight: "90vh" }}>
+        <Segment style={{ minHeight: "90vh",zIndex:0 }}>
           <Dimmer active>
             <Loader />
           </Dimmer>
@@ -155,7 +157,7 @@ class MySchedules extends React.Component {
     const localizer = momentLocalizer(moment);
     return (
       <>
-        <div className="container border border-primary rounded py-2">
+      <div className="container border border-primary rounded py-5 py-md-2 my-5 my-md-2">
           <b>
             <center style={{ fontSize: "25px" }}>My Schedule</center>
           </b>
